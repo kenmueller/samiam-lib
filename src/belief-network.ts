@@ -1,1 +1,5 @@
-export const sayHello = () => 'Hello'
+import Node from './node'
+
+export default class BeliefNetwork {
+	nodes = new Set<Node>()
+}

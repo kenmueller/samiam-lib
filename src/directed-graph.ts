@@ -1,4 +1,4 @@
-import Vertex from './vertex'
+import Vertex from './node'
 
 export default interface DirectedGraph {
 	topologicalOrder: Vertex[]
