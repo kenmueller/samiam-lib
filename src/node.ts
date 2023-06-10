@@ -51,15 +51,18 @@ export default class Node {
 
 	// getValueIndex = (value: string) => this.valueIndices.get(value) || new Error(`Value ${value} not in node ${this.name}`)
 
-	getConditionalProbability = (
-		value: string,
-		parentInstantiations: NodeInstantiation[]
-	) => {
+	getValueIndex = (value: string) => {
+		let valueIndex = this.valueIndices.get(value)
+		if (valueIndex === undefined)
+			throw new Error(`Missing value ${value} for node ${this.name}`)
+		return valueIndex
+	}
+
+	getCptColumnIndex = (parentInstantiations: NodeInstantiation[]) => {
 		let cptColumn = 0
 		let cptColumnsSoFar = 1
-		// const parentInstantiationMap = new Map<Node, number>()
-		// const parentInstantiationMap = parentInstantiations.reduce((map, instantiation) => (map.set(instantiation.node, instantiation.node.valueIndices.get(value) || 0), map), new Map<Node, number>())
 		for (const parent of this.parents) {
+			// potentially speed up with a parent instantiation map
 			const parentInstantiation = parentInstantiations.find(
 				instantiation => instantiation.node === parent
 			)
@@ -75,14 +78,24 @@ export default class Node {
 			cptColumn += parentIndex * cptColumnsSoFar
 			cptColumnsSoFar *= parent.values.length
 		}
-		let valueIndex = this.valueIndices.get(value)
-		if (valueIndex === undefined)
-			throw new Error(`Missing value ${value} for node ${this.name}`)
-		return this.cpt[valueIndex][cptColumn]
-		// this.parents.reduce((cptColumn, parent, index) => cptColumn + 1, 0)
-		// if (!isSubset(this.parents, pluck(parentInstantiations, 'node')))
-		//     throw new Error('Must include instantiations of all parents')
-		// const valueIndex = this.values.indexOf(value)
+		return cptColumn
 	}
-	// can speed up by maintaining a value to index mapping for each node
+
+	getConditionalProbability = (
+		value: string,
+		parentInstantiations: NodeInstantiation[]
+	) =>
+		this.cpt[this.getValueIndex(value)][
+			this.getCptColumnIndex(parentInstantiations)
+		]
+
+	setConditionalProbability = (
+		value: string,
+		parentInstantiations: NodeInstantiation[],
+		probability: number
+	) => {
+		this.cpt[this.getValueIndex(value)][
+			this.getCptColumnIndex(parentInstantiations)
+		] = probability
+	}
 }
