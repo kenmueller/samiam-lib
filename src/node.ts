@@ -49,8 +49,6 @@ export default class Node {
 		this.normalizeCpt()
 	}
 
-	// getValueIndex = (value: string) => this.valueIndices.get(value) || new Error(`Value ${value} not in node ${this.name}`)
-
 	getValueIndex = (value: string) => {
 		let valueIndex = this.valueIndices.get(value)
 		if (valueIndex === undefined)
