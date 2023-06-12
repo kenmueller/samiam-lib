@@ -5,13 +5,6 @@
 	"files": [
 		"lib"
 	],
-	"exports": {
-		"belief-network": "./lib/belief-network.js",
-		"directed-graph": "./lib/directed-graph.js",
-		"distribution-item": "./lib/distribution-item.js",
-		"node-instantiation": "./lib/node-instantiation.js",
-		"node": "./lib/node.js"
-	},
 	"scripts": {
 		"build": "tsc",
 		"format": "prettier --write .",
