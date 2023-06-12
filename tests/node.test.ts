@@ -61,3 +61,22 @@ test('correct CPT index', () => {
 		])
 	).toBe(59)
 })
+test('get and set CPT entries', () => {
+	nodeOutcome.setConditionalProbability(
+		'thriving',
+		[
+			{ node: nodeMedicine, value: 'b' },
+			{ node: nodeAge, value: 'adult' },
+			{ node: nodeSeverity, value: 'lot' }
+		],
+		0.27
+	)
+	expect(
+		nodeOutcome.getConditionalProbability('thriving', [
+			{ node: nodeMedicine, value: 'b' },
+			{ node: nodeAge, value: 'adult' },
+			{ node: nodeSeverity, value: 'lot' }
+		])
+	).toBe(nodeOutcome.cpt[2][42])
+	expect(nodeOutcome.cpt[2][42]).toBe(0.27)
+})
