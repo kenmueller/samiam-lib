@@ -1,20 +1,26 @@
+import BeliefNetwork from '../src/belief-network'
 import Node from '../src/node'
 
-const nodeMedicine = Node.withUniformDistribution('medicine', ['a', 'b', 'c'])
-const nodeAge = Node.withUniformDistribution('age', [
+const network = new BeliefNetwork()
+const nodeMedicine = Node.withUniformDistribution('medicine', network, [
+	'a',
+	'b',
+	'c'
+])
+const nodeAge = Node.withUniformDistribution('age', network, [
 	'kid',
 	'adolescent',
 	'adult',
 	'old'
 ])
-const nodeSeverity = Node.withUniformDistribution('severity', [
+const nodeSeverity = Node.withUniformDistribution('severity', network, [
 	'none',
 	'little',
 	'medium',
 	'lot',
 	'extreme'
 ])
-const nodeOutcome = Node.withUniformDistribution('outcome', [
+const nodeOutcome = Node.withUniformDistribution('outcome', network, [
 	'death',
 	'survival',
 	'thriving'
@@ -25,6 +31,17 @@ nodeMedicine.addParent(nodeSeverity)
 nodeOutcome.addParent(nodeAge)
 nodeOutcome.addParent(nodeMedicine)
 nodeOutcome.addParent(nodeSeverity)
+
+test('correct CPT sizes', () => {
+	expect(nodeAge.cpt.length).toBe(4)
+	expect(nodeAge.cpt[0].length).toBe(1)
+	expect(nodeMedicine.cpt.length).toBe(3)
+	expect(nodeMedicine.cpt[0].length).toBe(20)
+	expect(nodeSeverity.cpt.length).toBe(5)
+	expect(nodeSeverity.cpt[0].length).toBe(4)
+	expect(nodeOutcome.cpt.length).toBe(3)
+	expect(nodeOutcome.cpt[0].length).toBe(60)
+})
 
 test('randomizing CPT produces valid distributions', () => {
 	expect(
@@ -80,3 +97,6 @@ test('get and set CPT entries', () => {
 	).toBe(nodeOutcome.cpt[2][42])
 	expect(nodeOutcome.cpt[2][42]).toBe(0.27)
 })
+
+test('remove values', () => {})
+test('remove parents', () => {})

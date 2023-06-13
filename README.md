@@ -27,6 +27,8 @@ Complete port of [SamIam](https://github.com/uclareasoning/SamIam) with the addi
 
 - Interventional causal queries
 - Multiple variable prior and posterior marginals
+- Reorder node parents
+- Reorder node values
 
 ## Version 3
 
@@ -34,3 +36,4 @@ Features:
 
 - Counterfactual causal queries
 - Server side inference
+- Collaboration
