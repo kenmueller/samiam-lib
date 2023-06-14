@@ -50,6 +50,8 @@ export default class Node {
 	}
 
 	removeValue = (value: string) => {
+		if (this.values.length === 1)
+			throw new Error(`Node ${this.name} only has 1 value left`)
 		const index = this.values.indexOf(value)
 		if (index === -1)
 			throw new Error(`Value ${value} doesn't exist for node ${this.name}`)
@@ -69,13 +71,15 @@ export default class Node {
 		let prevParentsPeriod = 1
 		for (let prevParentIdx = 0; prevParentIdx < parentIndex; prevParentIdx++)
 			prevParentsPeriod *= this.parents[prevParentIdx].values.length
-		const parentPeriod = prevParentsPeriod * parent.values.length
+		// this CPT still represents the parents original values (1 more than now)
+		const parentPeriod = prevParentsPeriod * (parent.values.length + 1)
 		const reps = this.cpt[0].length / parentPeriod
-		for (let rep = 0; rep < reps; rep++)
-			this.cpt.splice(
-				rep * parentPeriod + parentIndex * prevParentsPeriod,
-				prevParentsPeriod
-			)
+		for (const row of this.cpt)
+			for (let rep = reps - 1; rep >= 0; rep--)
+				row.splice(
+					rep * parentPeriod + valueIndex * prevParentsPeriod,
+					prevParentsPeriod
+				)
 	}
 
 	isDescendant = (possibleDescendant: Node) => {
@@ -94,7 +98,37 @@ export default class Node {
 		)
 	}
 
-	removeParent = (parent: Node) => {}
+	removeParent = (parent: Node) => {
+		const index = this.parents.indexOf(parent)
+		if (index === -1)
+			throw new Error(`${parent.name} isn't a parent for node ${this.name}`)
+		this.removeParentIndex(index)
+	}
+
+	removeParentIndex = (parentIndex: number) => {
+		let prevParentsPeriod = 1
+		for (let prevParentIdx = 0; prevParentIdx < parentIndex; prevParentIdx++)
+			prevParentsPeriod *= this.parents[prevParentIdx].values.length
+		const parentValues = this.parents[parentIndex].values.length
+		const parentPeriod = prevParentsPeriod * parentValues
+		// # times to collapse cells due to the remove of parent
+		const reps = this.cpt[0].length / parentPeriod
+		for (const row of this.cpt)
+			for (let rep = reps - 1; rep >= 0; rep--) {
+				const repIdx = rep * parentPeriod
+				// cycle through each parent value to add probabilities to first group
+				for (let parentVal = parentValues - 1; parentVal >= 1; parentVal--)
+					for (let i = prevParentsPeriod - 1; i >= 0; i--)
+						row[repIdx + i] += row[repIdx + parentVal * prevParentsPeriod + i]
+				// probabilities have been collapsed into first group, remove other groups
+				row.splice(
+					repIdx + prevParentsPeriod,
+					prevParentsPeriod * (parentValues - 1)
+				)
+			}
+		this.normalizeCpt()
+		this.parents.splice(parentIndex, 1)
+	}
 
 	normalizeCptColumn = (column: number) => {
 		const sum = this.cpt.reduce((total, row) => total + row[column], 0)
@@ -160,7 +194,32 @@ export default class Node {
 		] = probability
 	}
 
+	setConditionalProbabilityDistribution = (
+		parentInstantiations: NodeInstantiation[],
+		probabilities: number[]
+	) => {
+		if (this.values.length !== probabilities.length)
+			throw new Error(
+				`Probability distribution should be size ${this.values.length}, not ${probabilities.length}`
+			)
+		for (let i = 0; i < this.cpt.length; i++)
+			this.cpt[i][this.getCptColumnIndex(parentInstantiations)] =
+				probabilities[i]
+	}
+
+	setCpt = (probabilities: number[][]) => {
+		if (this.values.length !== probabilities.length)
+			throw new Error(
+				`CPT should be size ${this.values.length}, not ${probabilities.length}`
+			)
+		if (this.cpt[0].length !== probabilities[0].length)
+			throw new Error(
+				`CPT should have ${this.cpt[0].length} rows, not ${probabilities[0].length}`
+			)
+		this.cpt = probabilities
+	}
+
 	getCptText = () => {
-		return this.cpt
+		return JSON.stringify(this.cpt)
 	}
 }
