@@ -71,7 +71,7 @@ const initializeNetwork = () => {
 
 beforeAll(initializeNetwork)
 
-test('correct CPT sizes', () => {
+test('correct CPT size', () => {
 	expect(nodeAge.cpt.length).toBe(4)
 	expect(nodeAge.cpt[0].length).toBe(1)
 	expect(nodeMedicine.cpt.length).toBe(3)
@@ -82,7 +82,7 @@ test('correct CPT sizes', () => {
 	expect(nodeOutcome.cpt[0].length).toBe(60)
 })
 
-test('randomizing CPT produces valid distributions', () => {
+test('randomize CPT', () => {
 	expect(
 		nodeOutcome.getConditionalProbability('death', [
 			{ node: nodeMedicine, value: 'b' },
@@ -117,7 +117,7 @@ test('correct CPT index', () => {
 		])
 	).toBe(59)
 })
-test('get and set CPT entries', () => {
+test('get and set CPT entry', () => {
 	nodeOutcome.setConditionalProbability(
 		'thriving',
 		[
@@ -137,7 +137,38 @@ test('get and set CPT entries', () => {
 	expect(nodeOutcome.cpt[2][42]).toBe(0.27)
 })
 
-test('remove values', () => {
+test('add value', () => {
+	initializeNetwork()
+	nodeSeverity.addValue('horrifying')
+	expect(nodeAge.cpt.length).toBe(4)
+	expect(nodeAge.cpt[0].length).toBe(1)
+	expect(nodeMedicine.cpt.length).toBe(3)
+	expect(nodeMedicine.cpt[0].length).toBe(24)
+	expect(
+		nodeMedicine.getConditionalProbabilityDistribution([
+			{ node: nodeAge, value: 'adult' },
+			{ node: nodeSeverity, value: 'lot' }
+		])
+	).toEqual([15 / 18, 2 / 18, 1 / 18])
+	expect(nodeSeverity.cpt.length).toBe(6)
+	expect(nodeSeverity.cpt[0].length).toBe(4)
+	expect(
+		nodeSeverity.getConditionalProbabilityDistribution([
+			{ node: nodeAge, value: 'adolescent' }
+		])
+	).toEqual([0.2, 0.2, 0.2, 0.2, 0.2, 0])
+	expect(nodeOutcome.cpt.length).toBe(3)
+	expect(nodeOutcome.cpt[0].length).toBe(72)
+	expect(
+		nodeOutcome.getConditionalProbabilityDistribution([
+			{ node: nodeMedicine, value: 'b' },
+			{ node: nodeAge, value: 'adult' },
+			{ node: nodeSeverity, value: 'lot' }
+		])
+	).toEqual([0.4, 0.35, 0.25])
+})
+
+test('remove value', () => {
 	initializeNetwork()
 	expect(() => nodeMedicine.removeValue('advil')).toThrow(
 		"Value advil doesn't exist for node medicine"
@@ -215,7 +246,7 @@ test('remove values', () => {
 		[0.5, 0.5, 0.5, 0.5 / 0.8]
 	])
 })
-test('remove parents', () => {
+test('remove parent', () => {
 	initializeNetwork()
 	nodeSeverity.removeParent(nodeAge)
 	expect(nodeSeverity.cpt).toEqual([

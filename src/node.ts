@@ -47,6 +47,25 @@ export default class Node {
 		// add cpt entries of 0 probability for the new value
 		this.cpt.push(new Array(this.cpt[0].length).fill(0))
 		// no need to normalize with new entries of probability 0
+		for (const child of this.children)
+			child.parentValueAdded(this, this.values.length - 1)
+	}
+
+	parentValueAdded = (parent: Node, valueIndex: number) => {
+		const parentIndex = this.parents.indexOf(parent)
+		let prevParentsPeriod = 1
+		for (let prevParentIdx = 0; prevParentIdx < parentIndex; prevParentIdx++)
+			prevParentsPeriod *= this.parents[prevParentIdx].values.length
+		// this CPT still represents the parent's original values (1 less than now)
+		const parentPeriod = prevParentsPeriod * (parent.values.length - 1)
+		const reps = this.cpt[0].length / parentPeriod
+		for (const row of this.cpt)
+			for (let rep = reps - 1; rep >= 0; rep--)
+				row.splice(
+					rep * parentPeriod + valueIndex * prevParentsPeriod,
+					0,
+					...new Array(prevParentsPeriod).fill(1 / this.values.length)
+				)
 	}
 
 	removeValue = (value: string) => {
@@ -71,7 +90,7 @@ export default class Node {
 		let prevParentsPeriod = 1
 		for (let prevParentIdx = 0; prevParentIdx < parentIndex; prevParentIdx++)
 			prevParentsPeriod *= this.parents[prevParentIdx].values.length
-		// this CPT still represents the parents original values (1 more than now)
+		// this CPT still represents the parent's original values (1 more than now)
 		const parentPeriod = prevParentsPeriod * (parent.values.length + 1)
 		const reps = this.cpt[0].length / parentPeriod
 		for (const row of this.cpt)
@@ -184,6 +203,17 @@ export default class Node {
 			this.getCptColumnIndex(parentInstantiations)
 		]
 
+	getConditionalProbabilityDistribution = (
+		parentInstantiations: NodeInstantiation[]
+	) => {
+		const probabilities: number[] = new Array(this.values.length)
+		for (let i = 0; i < this.cpt.length; i++)
+			probabilities[i] =
+				this.cpt[i][this.getCptColumnIndex(parentInstantiations)]
+
+		return probabilities
+	}
+
 	setConditionalProbability = (
 		value: string,
 		parentInstantiations: NodeInstantiation[],
@@ -206,6 +236,8 @@ export default class Node {
 			this.cpt[i][this.getCptColumnIndex(parentInstantiations)] =
 				probabilities[i]
 	}
+
+	getCpt = () => this.cpt
 
 	setCpt = (probabilities: number[][]) => {
 		if (this.values.length !== probabilities.length)
