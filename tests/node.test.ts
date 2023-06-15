@@ -246,6 +246,17 @@ test('remove value', () => {
 		[0.5, 0.5, 0.5, 0.5 / 0.8]
 	])
 })
+test('Existing parent cannot be added', () => {
+	expect(() => nodeOutcome.addParent(nodeAge)).toThrow(
+		'Node outcome already has parent age'
+	)
+	expect(() => nodeOutcome.addParent(nodeMedicine)).toThrow(
+		'Node outcome already has parent medicine'
+	)
+	expect(() => nodeOutcome.addParent(nodeSeverity)).toThrow(
+		'Node outcome already has parent severity'
+	)
+})
 test('remove parent', () => {
 	initializeNetwork()
 	nodeSeverity.removeParent(nodeAge)
@@ -297,4 +308,19 @@ test('remove parent', () => {
 				5
 		]
 	])
+})
+test('maintain acyclicity', () => {
+	expect(() => nodeAge.addParent(nodeAge)).toThrow(
+		'Node age cannot be a parent of itself'
+	)
+	expect(nodeAge.parents).toEqual([])
+	expect(() => nodeAge.addParent(nodeMedicine)).toThrow(
+		'Adding parent node medicine to node age induces a cycle'
+	)
+	expect(() => nodeMedicine.addParent(nodeOutcome)).toThrow(
+		'Adding parent node outcome to node medicine induces a cycle'
+	)
+	expect(() => nodeSeverity.addParent(nodeMedicine)).toThrow(
+		'Adding parent node medicine to node severity induces a cycle'
+	)
 })
