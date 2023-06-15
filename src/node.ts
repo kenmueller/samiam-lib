@@ -101,15 +101,23 @@ export default class Node {
 				)
 	}
 
-	isDescendant = (possibleDescendant: Node) => {
+	/** assume acyclic */
+	isDescendant = (possibleDescendant: Node): boolean => {
+		for (const child of this.children)
+			if (child === possibleDescendant) return true
+			else return child.isDescendant(possibleDescendant)
 		return false
 	}
 
 	addParent = (node: Node) => {
+		if (this === node)
+			throw new Error(`Node ${this.name} cannot be a parent of itself`)
 		if (this.isDescendant(node))
 			throw new Error(
 				`Adding parent node ${node.name} to node ${this.name} induces a cycle`
 			)
+		if (this.parents.includes(node))
+			throw new Error(`Node ${this.name} already has parent ${node.name}`)
 		this.parents.push(node)
 		node.children.add(this)
 		this.cpt = this.cpt.map(row =>
@@ -236,8 +244,6 @@ export default class Node {
 			this.cpt[i][this.getCptColumnIndex(parentInstantiations)] =
 				probabilities[i]
 	}
-
-	getCpt = () => this.cpt
 
 	setCpt = (probabilities: number[][]) => {
 		if (this.values.length !== probabilities.length)
