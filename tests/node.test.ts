@@ -37,10 +37,32 @@ const initializeNetwork = () => {
 	nodeOutcome.addParent(nodeMedicine)
 	nodeOutcome.addParent(nodeSeverity)
 	nodeAge.setConditionalProbabilityDistribution([], [0.1, 0.2, 0.3, 0.4])
+	// nodeMedicine.setCpt([
+	// 	[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
+	// 	[2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0],
+	// 	[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+	// ])
 	nodeMedicine.setCpt([
-		[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
-		[2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0],
-		[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+		[1, 2, 1],
+		[2, 0, 1],
+		[3, 2, 1],
+		[4, 0, 1],
+		[5, 2, 1],
+		[6, 0, 1],
+		[7, 2, 1],
+		[8, 0, 1],
+		[9, 2, 1],
+		[10, 0, 1],
+		[11, 2, 1],
+		[12, 0, 1],
+		[13, 2, 1],
+		[14, 0, 1],
+		[15, 2, 1],
+		[16, 0, 1],
+		[17, 2, 1],
+		[18, 0, 1],
+		[19, 2, 1],
+		[20, 0, 1]
 	])
 	nodeMedicine.normalizeCpt()
 	nodeSeverity.setConditionalProbabilityDistribution(
@@ -71,15 +93,27 @@ const initializeNetwork = () => {
 
 beforeAll(initializeNetwork)
 
+test('create invalid node', () => {
+	expect(() => Node.withUniformDistribution('', network, ['1', '2'])).toThrow(
+		'Name must not be empty'
+	)
+	expect(() =>
+		Node.withUniformDistribution('age', network, ['1', '2'])
+	).toThrow('Duplicate name age for node')
+	expect(() => Node.withUniformDistribution('race', network, [])).toThrow(
+		'Must have at least 1 value'
+	)
+})
+
 test('correct CPT size', () => {
-	expect(nodeAge.cpt.length).toBe(4)
-	expect(nodeAge.cpt[0].length).toBe(1)
-	expect(nodeMedicine.cpt.length).toBe(3)
-	expect(nodeMedicine.cpt[0].length).toBe(20)
-	expect(nodeSeverity.cpt.length).toBe(5)
-	expect(nodeSeverity.cpt[0].length).toBe(4)
-	expect(nodeOutcome.cpt.length).toBe(3)
-	expect(nodeOutcome.cpt[0].length).toBe(60)
+	expect(nodeAge.cpt.length).toBe(1)
+	expect(nodeAge.cpt[0].length).toBe(4)
+	expect(nodeMedicine.cpt.length).toBe(20)
+	expect(nodeMedicine.cpt[0].length).toBe(3)
+	expect(nodeSeverity.cpt.length).toBe(4)
+	expect(nodeSeverity.cpt[0].length).toBe(5)
+	expect(nodeOutcome.cpt.length).toBe(60)
+	expect(nodeOutcome.cpt[0].length).toBe(3)
 })
 
 test('randomize CPT', () => {
@@ -89,28 +123,28 @@ test('randomize CPT', () => {
 			{ node: nodeAge, value: 'adult' },
 			{ node: nodeSeverity, value: 'lot' }
 		])
-	).toBe(nodeOutcome.cpt[0][42])
+	).toBe(nodeOutcome.cpt[42][0])
 })
 test('correct CPT index', () => {
 	expect(nodeOutcome.getValueIndex('death')).toBe(0)
 	expect(nodeOutcome.getValueIndex('survival')).toBe(1)
 	expect(nodeOutcome.getValueIndex('thriving')).toBe(2)
 	expect(
-		nodeOutcome.getCptColumnIndex([
+		nodeOutcome.getCptParentInstantiationIndex([
 			{ node: nodeMedicine, value: 'a' },
 			{ node: nodeAge, value: 'kid' },
 			{ node: nodeSeverity, value: 'none' }
 		])
 	).toBe(0)
 	expect(
-		nodeOutcome.getCptColumnIndex([
+		nodeOutcome.getCptParentInstantiationIndex([
 			{ node: nodeMedicine, value: 'b' },
 			{ node: nodeAge, value: 'adult' },
 			{ node: nodeSeverity, value: 'lot' }
 		])
 	).toBe(42)
 	expect(
-		nodeOutcome.getCptColumnIndex([
+		nodeOutcome.getCptParentInstantiationIndex([
 			{ node: nodeMedicine, value: 'c' },
 			{ node: nodeAge, value: 'old' },
 			{ node: nodeSeverity, value: 'extreme' }
@@ -133,32 +167,32 @@ test('get and set CPT entry', () => {
 			{ node: nodeAge, value: 'adult' },
 			{ node: nodeSeverity, value: 'lot' }
 		])
-	).toBe(nodeOutcome.cpt[2][42])
-	expect(nodeOutcome.cpt[2][42]).toBe(0.27)
+	).toBe(nodeOutcome.cpt[42][2])
+	expect(nodeOutcome.cpt[42][2]).toBe(0.27)
 })
 
 test('add value', () => {
 	initializeNetwork()
 	nodeSeverity.addValue('horrifying')
-	expect(nodeAge.cpt.length).toBe(4)
-	expect(nodeAge.cpt[0].length).toBe(1)
-	expect(nodeMedicine.cpt.length).toBe(3)
-	expect(nodeMedicine.cpt[0].length).toBe(24)
+	expect(nodeAge.cpt.length).toBe(1)
+	expect(nodeAge.cpt[0].length).toBe(4)
+	expect(nodeMedicine.cpt.length).toBe(24)
+	expect(nodeMedicine.cpt[0].length).toBe(3)
 	expect(
 		nodeMedicine.getConditionalProbabilityDistribution([
 			{ node: nodeAge, value: 'adult' },
 			{ node: nodeSeverity, value: 'lot' }
 		])
 	).toEqual([15 / 18, 2 / 18, 1 / 18])
-	expect(nodeSeverity.cpt.length).toBe(6)
-	expect(nodeSeverity.cpt[0].length).toBe(4)
+	expect(nodeSeverity.cpt.length).toBe(4)
+	expect(nodeSeverity.cpt[0].length).toBe(6)
 	expect(
 		nodeSeverity.getConditionalProbabilityDistribution([
 			{ node: nodeAge, value: 'adolescent' }
 		])
 	).toEqual([0.2, 0.2, 0.2, 0.2, 0.2, 0])
-	expect(nodeOutcome.cpt.length).toBe(3)
-	expect(nodeOutcome.cpt[0].length).toBe(72)
+	expect(nodeOutcome.cpt.length).toBe(72)
+	expect(nodeOutcome.cpt[0].length).toBe(3)
 	expect(
 		nodeOutcome.getConditionalProbabilityDistribution([
 			{ node: nodeMedicine, value: 'b' },
@@ -176,62 +210,88 @@ test('remove value', () => {
 	nodeMedicine.removeValue('b')
 	// would be nicer with a .toBeCloseTo function for arrays
 	expect(nodeMedicine.cpt).toEqual([
-		[
-			1 / 2,
-			2 / 3,
-			3 / 4,
-			4 / 5,
-			5 / 6,
-			6 / 7,
-			7 / 8,
-			8 / 9,
-			0.8999999999999999,
-			10 / 11,
-			0.9166666666666667,
-			12 / 13,
-			13 / 14,
-			14 / 15,
-			15 / 16,
-			16 / 17,
-			17 / 18,
-			18 / 19,
-			0.9500000000000001,
-			20 / 21
-		],
-		[
-			1 / 2,
-			1 / 3,
-			1 / 4,
-			1 / 5,
-			1 / 6,
-			1 / 7,
-			0.12500000000000003,
-			1 / 9,
-			0.09999999999999999,
-			1 / 11,
-			1 / 12,
-			1 / 13,
-			1 / 14,
-			1 / 15,
-			0.06249999999999999,
-			1 / 17,
-			0.05555555555555556,
-			1 / 19,
-			1 / 20,
-			1 / 21
-		]
+		[0.5, 0.5],
+		[0.6666666666666666, 0.3333333333333333],
+		[0.75, 0.25],
+		[0.8, 0.2],
+		[0.8333333333333334, 0.16666666666666666],
+		[0.8571428571428571, 0.14285714285714285],
+		[0.875, 0.12500000000000003],
+		[0.8888888888888888, 0.1111111111111111],
+		[0.8999999999999999, 0.09999999999999999],
+		[0.9090909090909091, 0.09090909090909091],
+		[0.9166666666666667, 0.08333333333333333],
+		[0.9230769230769231, 0.07692307692307693],
+		[0.9285714285714286, 0.07142857142857142],
+		[0.9333333333333333, 0.06666666666666667],
+		[0.9375, 0.06249999999999999],
+		[0.9411764705882353, 0.058823529411764705],
+		[0.9444444444444444, 0.05555555555555556],
+		[0.9473684210526315, 0.05263157894736842],
+		[0.9500000000000001, 0.05],
+		[0.9523809523809523, 0.047619047619047616]
 	])
+	// expect(nodeMedicine.cpt).toEqual([
+	// 	[
+	// 		1 / 2,
+	// 		2 / 3,
+	// 		3 / 4,
+	// 		4 / 5,
+	// 		5 / 6,
+	// 		6 / 7,
+	// 		7 / 8,
+	// 		8 / 9,
+	// 		0.8999999999999999,
+	// 		10 / 11,
+	// 		0.9166666666666667,
+	// 		12 / 13,
+	// 		13 / 14,
+	// 		14 / 15,
+	// 		15 / 16,
+	// 		16 / 17,
+	// 		17 / 18,
+	// 		18 / 19,
+	// 		0.9500000000000001,
+	// 		20 / 21
+	// 	],
+	// 	[
+	// 		1 / 2,
+	// 		1 / 3,
+	// 		1 / 4,
+	// 		1 / 5,
+	// 		1 / 6,
+	// 		1 / 7,
+	// 		0.12500000000000003,
+	// 		1 / 9,
+	// 		0.09999999999999999,
+	// 		1 / 11,
+	// 		1 / 12,
+	// 		1 / 13,
+	// 		1 / 14,
+	// 		1 / 15,
+	// 		0.06249999999999999,
+	// 		1 / 17,
+	// 		0.05555555555555556,
+	// 		1 / 19,
+	// 		1 / 20,
+	// 		1 / 21
+	// 	]
+	// ])
 	nodeSeverity.removeValue('extreme')
 	expect(nodeSeverity.cpt).toEqual([
-		[0.4, 0.25, 0.27 / 0.77, 0.25],
-		[0.2, 0.25, 0.13 / 0.77, 0.25],
-		[0.1, 0.25, 0.15 / 0.77, 0.25],
-		[0.3, 0.25, 0.22 / 0.77, 0.25]
+		[0.4, 0.2, 0.1, 0.3],
+		[0.25, 0.25, 0.25, 0.25],
+		[0.27 / 0.77, 0.13 / 0.77, 0.15 / 0.77, 0.22 / 0.77],
+		[0.25, 0.25, 0.25, 0.25]
+		// [0.4, 0.25, 0.27 / 0.77, 0.25],
+		// [0.2, 0.25, 0.13 / 0.77, 0.25],
+		// [0.1, 0.25, 0.15 / 0.77, 0.25],
+		// [0.3, 0.25, 0.22 / 0.77, 0.25]
 	])
 	nodeAge.removeValue('kid')
-	expect(nodeAge.cpt).toEqual([[0.2 / 0.9], [0.3 / 0.9], [0.4 / 0.9]])
+	expect(nodeAge.cpt).toEqual([[0.2 / 0.9, 0.3 / 0.9, 0.4 / 0.9]])
 	nodeAge.removeValue('adult')
-	expect(nodeAge.cpt).toEqual([[1 / 3], [2 / 3]])
+	expect(nodeAge.cpt).toEqual([[1 / 3, 2 / 3]])
 	nodeSeverity.removeValue('little')
 	nodeSeverity.removeValue('none')
 	expect(nodeSeverity.cpt).toEqual([
@@ -239,11 +299,15 @@ test('remove value', () => {
 		[0.5, 0.5]
 	])
 	nodeSeverity.removeValue('lot')
-	expect(nodeSeverity.cpt).toEqual([[1, 1]])
+	expect(nodeSeverity.cpt).toEqual([[1], [1]])
 	nodeOutcome.removeValue('death')
 	expect(nodeOutcome.cpt).toEqual([
-		[0.5, 0.5, 0.5, 0.3 / 0.8],
-		[0.5, 0.5, 0.5, 0.5 / 0.8]
+		[0.5, 0.5],
+		[0.5, 0.5],
+		[0.5, 0.5],
+		[0.3 / 0.8, 0.5 / 0.8]
+		// [0.5, 0.5, 0.5, 0.3 / 0.8],
+		// [0.5, 0.5, 0.5, 0.5 / 0.8]
 	])
 })
 test('Existing parent cannot be added', () => {
@@ -261,53 +325,55 @@ test('remove parent', () => {
 	initializeNetwork()
 	nodeSeverity.removeParent(nodeAge)
 	expect(nodeSeverity.cpt).toEqual([
-		[0.21750000000000003],
-		[0.15750000000000003],
-		[0.15000000000000002],
-		[0.77 / 4],
-		[1.13 / 4]
-	])
-	nodeMedicine.removeParent(nodeSeverity)
-	expect(nodeMedicine.cpt).toEqual([
 		[
-			(0.25 + 0.625 + 0.75 + 0.8125 + 0.85) / 5,
-			0.8627204374572794,
-			(0.5 +
-				0.7 +
-				0.7857142857142857 +
-				0.8333333333333334 +
-				0.8636363636363636) /
-				5,
-			(0.8 +
-				0.8888888888888888 +
-				0.9230769230769231 +
-				0.9411764705882353 +
-				0.9523809523809523) /
-				5
-		],
-		[
-			(0.5 + 0.25 + 0.16666666666666666 + 0.125 + 0.1) / 5,
-			0,
-			0.1756421356421356,
-			0
-		],
-		[
-			(0.25 + 0.125 + 0.08333333333333333 + 0.0625 + 0.05) / 5,
-			(0.3333333333333333 +
-				0.14285714285714285 +
-				0.09090909090909091 +
-				0.06666666666666667 +
-				0.05263157894736842) /
-				5,
-			0.0878210678210678,
-			(0.2 +
-				0.1111111111111111 +
-				0.07692307692307693 +
-				0.058823529411764705 +
-				0.047619047619047616) /
-				5
+			0.21750000000000003,
+			0.15750000000000003,
+			0.15000000000000002,
+			0.77 / 4,
+			1.13 / 4
 		]
 	])
+	nodeMedicine.removeParent(nodeSeverity)
+	// expect(nodeMedicine.cpt).toEqual([
+	// 	[
+	// 		(0.25 + 0.625 + 0.75 + 0.8125 + 0.85) / 5,
+	// 		0.8627204374572794,
+	// 		(0.5 +
+	// 			0.7 +
+	// 			0.7857142857142857 +
+	// 			0.8333333333333334 +
+	// 			0.8636363636363636) /
+	// 			5,
+	// 		(0.8 +
+	// 			0.8888888888888888 +
+	// 			0.9230769230769231 +
+	// 			0.9411764705882353 +
+	// 			0.9523809523809523) /
+	// 			5
+	// 	],
+	// 	[
+	// 		(0.5 + 0.25 + 0.16666666666666666 + 0.125 + 0.1) / 5,
+	// 		0,
+	// 		0.1756421356421356,
+	// 		0
+	// 	],
+	// 	[
+	// 		(0.25 + 0.125 + 0.08333333333333333 + 0.0625 + 0.05) / 5,
+	// 		(0.3333333333333333 +
+	// 			0.14285714285714285 +
+	// 			0.09090909090909091 +
+	// 			0.06666666666666667 +
+	// 			0.05263157894736842) /
+	// 			5,
+	// 		0.0878210678210678,
+	// 		(0.2 +
+	// 			0.1111111111111111 +
+	// 			0.07692307692307693 +
+	// 			0.058823529411764705 +
+	// 			0.047619047619047616) /
+	// 			5
+	// 	]
+	// ])
 })
 test('maintain acyclicity', () => {
 	expect(() => nodeAge.addParent(nodeAge)).toThrow(

@@ -20,12 +20,12 @@ Features:
   - MPE
   - MAP
   - Sensitivity analysis
+- Interventional causal queries
 
 ## Version 2
 
 Complete port of [SamIam](https://github.com/uclareasoning/SamIam) with the addition of:
 
-- Interventional causal queries
 - Multiple variable prior and posterior marginals
 - Reorder node parents
 - Reorder node values
