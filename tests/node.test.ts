@@ -1,7 +1,7 @@
 import BeliefNetwork from '../src/belief-network'
 import Node from '../src/node'
 
-let network: BeliefNetwork
+let network: BeliefNetwork<Node>
 let nodeAge: Node, nodeMedicine: Node, nodeSeverity: Node, nodeOutcome: Node
 
 const initializeNetwork = () => {
