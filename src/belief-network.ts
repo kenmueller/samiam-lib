@@ -1,7 +1,7 @@
 import Node from './node'
 
-export default class BeliefNetwork {
-	nodes = new Set<Node>()
+export default class BeliefNetwork<NodeLike extends Node = Node> {
+	nodes = new Set<NodeLike>()
 	nodeNames = new Set<string>()
 
 	// addNode = (node: Node) => {
