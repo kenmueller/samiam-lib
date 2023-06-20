@@ -18,5 +18,8 @@
 	},
 	"keywords": [],
 	"author": "Ken Mueller",
-	"license": "MIT"
+	"license": "MIT",
+	"dependencies": {
+		"immer": "^10.0.2"
+	}
 }
