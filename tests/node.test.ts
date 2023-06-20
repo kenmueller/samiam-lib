@@ -172,7 +172,7 @@ test('get and set CPT entry', () => {
 })
 
 test('add value', () => {
-	initializeNetwork()
+	// initializeNetwork()
 	nodeSeverity.addValue('horrifying')
 	expect(nodeAge.cpt.length).toBe(1)
 	expect(nodeAge.cpt[0].length).toBe(4)
@@ -203,7 +203,7 @@ test('add value', () => {
 })
 
 test('remove value', () => {
-	initializeNetwork()
+	// initializeNetwork()
 	expect(() => nodeMedicine.removeValue('advil')).toThrow(
 		"Value advil doesn't exist for node medicine"
 	)
@@ -322,7 +322,7 @@ test('Existing parent cannot be added', () => {
 	)
 })
 test('remove parent', () => {
-	initializeNetwork()
+	// initializeNetwork()
 	nodeSeverity.removeParent(nodeAge)
 	expect(nodeSeverity.cpt).toEqual([
 		[

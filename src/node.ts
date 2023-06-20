@@ -19,7 +19,7 @@ export default class Node {
 
 	constructor(
 		public name: string,
-		private network: BeliefNetwork,
+		network: BeliefNetwork,
 		distribution: DistributionItem[]
 	) {
 		if (!name.length) throw new Error('Name must not be empty')
@@ -31,8 +31,7 @@ export default class Node {
 			this.valueIndices.set(distributionItem.value, this.valueIndices.size)
 			this.cpt[0].push(distributionItem.probability)
 		}
-		network.nodes.add(this)
-		network.nodeNames.add(name)
+		network.addNode(this)
 	}
 
 	static withUniformDistribution = (
