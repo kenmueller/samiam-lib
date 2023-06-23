@@ -4,7 +4,7 @@ SamIam lib is an inference library port the [Automated Reasoning group at UCLA](
 
 # SamIam web
 
-SamIam web is a cloud port of the [Automated Reasoning group at UCLA](http://reasoning.cs.ucla.edu/)'s original [SamIam software](http://reasoning.cs.ucla.edu/samiam). This front-end for SamIam lib is now available at https://samiam.vercel.app.
+SamIam web is a cloud port of the [Automated Reasoning group at UCLA](http://reasoning.cs.ucla.edu/)'s original [SamIam software](http://reasoning.cs.ucla.edu/samiam). This front-end for SamIam lib is now available at https://samiam.ai.
 
 # Status
 
