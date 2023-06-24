@@ -90,23 +90,30 @@ const initializeNetwork = () => {
 initializeNetwork()
 
 test('create invalid node', () => {
-	expect(() => Node.withUniformDistribution('', network, ['1', '2'])).toThrow(
-		'Name must not be empty'
-	)
-	expect(() =>
-		Node.withUniformDistribution('age', network, ['1', '2'])
-	).toThrow('Another node already has name age')
+	// expect(() => Node.withUniformDistribution('', network, ['1', '2'])).toThrow(
+	// 	'Name must not be empty'
+	// )
+	// expect(() =>
+	// 	Node.withUniformDistribution('age', network, ['1', '2'])
+	// ).toThrow('Another node already has name age')
 	expect(() => Node.withUniformDistribution('race', network, [])).toThrow(
 		'Must have at least 1 value'
 	)
 })
 
+test('allow duplicate and empty names', () => {
+	nodeMedicine.rename('age')
+	expect(nodeMedicine.name).toBe('age')
+	nodeMedicine.rename('')
+	expect(nodeMedicine.name).toBe('')
+})
+
 test('rename node', () => {
 	nodeMedicine.rename('medicine 3.0')
 	expect(nodeMedicine.name).toBe('medicine 3.0')
-	expect(() => nodeMedicine.rename('age')).toThrow(
-		'Another node already has name age'
-	)
+	// expect(() => nodeMedicine.rename('age')).toThrow(
+	// 	'Another node already has name age'
+	// )
 })
 
 test('correct CPT size', () => {
