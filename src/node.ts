@@ -26,6 +26,8 @@ if (!Array.prototype.toReversed)
 		enumerable: false
 	})
 
+export type Id = string | number | symbol
+
 export default class Node {
 	// /** indices of parents in the CPT */
 	parents: Node[] = []
@@ -35,14 +37,12 @@ export default class Node {
 	cpt: number[][] = [[]]
 
 	constructor(
+		public id: Id,
 		public name: string,
 		private network: BeliefNetwork,
 		distribution: DistributionItem[]
 	) {
-		// if (!name.length) throw new Error('Name must not be empty')
-		// if (network.nodeNames.has(name))
-		// 	throw new Error(`Duplicate name ${name} for node`)
-		this.validateName(name)
+		// this.validateName(name)
 		if (!distribution.length) throw new Error('Must have at least 1 value')
 		for (const distributionItem of distribution) {
 			this.values.push(distributionItem.value)
@@ -52,16 +52,24 @@ export default class Node {
 		network.addNode(this)
 	}
 
-	static withUniformDistribution = (
+	static withIdUniformDistribution = (
+		id: Id,
 		name: string,
 		network: BeliefNetwork,
 		values: string[]
 	) =>
 		new Node(
+			id,
 			name,
 			network,
 			values.map(value => ({ value, probability: 1 / values.length }))
 		)
+
+	static withUniformDistribution = (
+		name: string,
+		network: BeliefNetwork,
+		values: string[]
+	) => this.withIdUniformDistribution('', name, network, values)
 
 	validateName = (name: string) => {
 		if (!name.length) throw new Error('Name must not be empty')
@@ -70,7 +78,7 @@ export default class Node {
 	}
 
 	rename = (name: string) => {
-		this.validateName(name)
+		// this.validateName(name)
 		this.name = name
 	}
 
