@@ -21,3 +21,9 @@ test('cumulative product', () => {
 	expect(util.cumProd(cpt[2])).toEqual([0, 0, 0])
 	expect(util.cumProd(cpt[3])).toEqual([0.5, 0.15, 0.03])
 })
+test('probability complement', () => {
+	expect(util.probComplement(0.8)).toBe(0.2)
+	expect(util.probComplement(0.2)).toBe(0.8)
+	expect(util.probComplement(1)).toBe(0)
+	expect(util.probComplement(0)).toBe(1)
+})

@@ -70,3 +70,12 @@ export const transpose = (array: number[][]) =>
 	Array.from({ length: array[0].length }, (_row, i) =>
 		Array.from({ length: array.length }, (_col, j) => array[j][i])
 	)
+
+const numDecimals = (num: number) => {
+	if (Number.isInteger(num)) return 0
+	const numString = num.toString()
+	return numString.length - numString.indexOf('.') - 1
+}
+
+export const probComplement = (prob: number) =>
+	Number((1 - prob).toFixed(numDecimals(prob)))
