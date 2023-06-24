@@ -312,3 +312,24 @@ test('maintain acyclicity', () => {
 		'Adding parent node medicine to node severity induces a cycle'
 	)
 })
+test('latex cpt', () => {
+	initializeNetwork()
+	expect(nodeAge.getCptLatex()).toBe(`\\begin{tabular}{|l|l|l|l|}
+\t\\hline
+\tkid & adolescent & adult & old\\\\
+\t\\hline
+\t0.1 & 0.2 & 0.3 & 0.4\\\\
+\t\\hline
+\\end{tabular}`)
+	expect(nodeSeverity.getCptLatex()).toBe(`\\begin{tabular}{|l|l|l|l|l|l|}
+\t\\hline
+\tage & none & little & medium & lot & extreme\\\\
+\t\\hline
+\tkid & 0.2 & 0.1 & 0.05 & 0.15 & 0.5\\\\
+\tadolescent & 0.2 & 0.2 & 0.2 & 0.2 & 0.2\\\\
+\tadult & 0.27 & 0.13 & 0.15 & 0.22 & 0.23\\\\
+\told & 0.2 & 0.2 & 0.2 & 0.2 & 0.2\\\\
+\t\\hline
+\\end{tabular}`)
+	console.log(nodeSeverity.getCptLatex())
+})
