@@ -3,14 +3,31 @@ import DistributionItem from './distribution-item'
 import NodeInstantiation from './node-instantiation'
 import {
 	pluck,
+	cumProd,
 	addArrays,
 	normalizeDistribution,
-	randomizeDistribution
+	randomizeDistribution,
+	maxArrays
 } from './util'
+
+declare global {
+	interface Array<T> {
+		toReversed(): Array<T>
+	}
+}
+
+if (!Array.prototype.toReversed)
+	Object.defineProperty(Array.prototype, 'toReversed', {
+		value: function () {
+			const rev = [...this]
+			rev.reverse()
+			return rev
+		},
+		enumerable: false
+	})
 
 export default class Node {
 	// /** indices of parents in the CPT */
-	// parents = new Map<Node, number>()
 	parents: Node[] = []
 	children = new Set<Node>()
 	values: string[] = []
@@ -51,7 +68,6 @@ export default class Node {
 		this.values.push(value)
 		// add cpt entries of 0 probability for the new value
 		for (const row of this.cpt) row.push(0)
-		// this.cpt.push(new Array(this.cpt[0].length).fill(0))
 		// no need to normalize with new entries of probability 0
 		for (const child of this.children)
 			child.parentValueAdded(this, this.values.length - 1)
@@ -66,21 +82,13 @@ export default class Node {
 		const parentPeriod = prevParentsPeriod * (parent.values.length - 1)
 		const parentsInstantiations = this.cpt.length
 		const reps = parentsInstantiations / parentPeriod
-		// for (const row of this.cpt)
 		for (let rep = reps - 1; rep >= 0; rep--)
-			// row.splice(
-			// 	rep * parentPeriod + valueIndex * prevParentsPeriod,
-			// 	0,
-			// 	...new Array(prevParentsPeriod).fill(1 / this.values.length)
-			// )
 			this.cpt.splice(
 				rep * parentPeriod + valueIndex * prevParentsPeriod,
 				0,
 				...Array.from({ length: prevParentsPeriod }, () =>
 					new Array(this.values.length).fill(1 / this.values.length)
 				)
-				// ...[...new Array(prevParentsPeriod)].map(() =>
-				// 	new Array(this.values.length).fill(1 / this.values.length)
 			)
 	}
 
@@ -97,7 +105,6 @@ export default class Node {
 		this.values.splice(index, 1)
 		// remove cpt entries for row corresponding to this value
 		for (const row of this.cpt) row.splice(index, 1)
-		// this.cpt.splice(index, 1)
 		this.normalizeCpt()
 		for (const child of this.children) child.parentValueRemoved(this, index)
 	}
@@ -111,16 +118,11 @@ export default class Node {
 		const parentPeriod = prevParentsPeriod * (parent.values.length + 1)
 		const parentsInstantiations = this.cpt.length
 		const reps = parentsInstantiations / parentPeriod
-		// for (const row of this.cpt)
 		for (let rep = reps - 1; rep >= 0; rep--)
 			this.cpt.splice(
 				rep * parentPeriod + valueIndex * prevParentsPeriod,
 				prevParentsPeriod
 			)
-		// row.splice(
-		// 	rep * parentPeriod + valueIndex * prevParentsPeriod,
-		// 	prevParentsPeriod
-		// )
 	}
 
 	/** assume acyclic */
@@ -142,9 +144,6 @@ export default class Node {
 			throw new Error(`Node ${this.name} already has parent ${node.name}`)
 		this.parents.push(node)
 		node.children.add(this)
-		// this.cpt = this.cpt.map(row =>
-		// 	new Array(node.values.length).fill(row).flat()
-		// )
 		this.cpt = Array.from({ length: node.values.length }, () =>
 			this.cpt.map(row => row.slice())
 		).flat()
@@ -166,10 +165,8 @@ export default class Node {
 		// # times to collapse cells due to the remove of parent
 		const parentsInstantiations = this.cpt.length
 		const reps = parentsInstantiations / parentPeriod
-		// const reps = this.cpt[0].length / parentPeriod
 		for (let rep = reps - 1; rep >= 0; rep--) {
 			const repIdx = rep * parentPeriod
-			// for (let col = 0; col < this.values.length; col++)
 			// cycle through each parent value to add probabilities to first group
 			for (let parentVal = parentValues - 1; parentVal >= 1; parentVal--)
 				for (let i = prevParentsPeriod - 1; i >= 0; i--)
@@ -177,8 +174,6 @@ export default class Node {
 						this.cpt[repIdx + i],
 						this.cpt[repIdx + parentVal * prevParentsPeriod + i]
 					)
-			// this.cpt[repIdx + i][col] +=
-			// 	this.cpt[repIdx + parentVal * prevParentsPeriod + i][col]
 			// probabilities have been collapsed into first group, remove other groups
 			this.cpt.splice(
 				repIdx + prevParentsPeriod,
@@ -190,14 +185,10 @@ export default class Node {
 	}
 
 	normalizeCpt = () => {
-		// for (const distribution of this.cpt) normalizeDistribution(distribution)
 		this.cpt.forEach(normalizeDistribution)
 	}
 
 	randomizeCpt = () => {
-		// for (const [rowIndex, row] of this.cpt.entries())
-		// 	for (let column = 0; column < row.length; column++)
-		// 		this.cpt[rowIndex][column] = Math.random()
 		this.cpt.forEach(randomizeDistribution)
 	}
 
@@ -244,14 +235,6 @@ export default class Node {
 	getConditionalProbabilityDistribution = (
 		parentInstantiations: NodeInstantiation[]
 	) => this.cpt[this.getCptParentInstantiationIndex(parentInstantiations)]
-	// {
-	// 	const probabilities: number[] = new Array(this.values.length)
-	// 	for (let i = 0; i < this.cpt.length; i++)
-	// 		probabilities[i] =
-	// 			this.cpt[i][this.getCptColumnIndex(parentInstantiations)]
-
-	// 	return probabilities
-	// }
 
 	setConditionalProbability = (
 		value: string,
@@ -290,18 +273,39 @@ export default class Node {
 	}
 
 	getCptText = () => {
-		const parentNames = pluck(this.parents, 'name')
-		const values = this.values.map(title => title.padEnd(4, ' '))
-		const parentsWidths = pluck(parentNames, 'length')
+		const parents = this.parents.toReversed()
+		const parentNames = pluck(parents, 'name')
+		const values = this.values.map(title => title.padEnd(4))
+		const parentsNameWidths = pluck(parentNames, 'length')
 		const valuesWidths = pluck(values, 'length')
-		const parentsAndValues = parentNames.concat(values)
+		const parentsValues = pluck(parents, 'values')
+		const parentsMaxValueWidths = parentsValues.map(vals =>
+			Math.max(...pluck(vals, 'length'))
+		)
+		const parentsWidths = maxArrays(parentsNameWidths, parentsMaxValueWidths)
+		const parentPeriods = pluck(parentsValues, 'length')
+		const parentCumPeriods = cumProd(parentPeriods.toReversed()).reverse()
+		const numParents = this.parents.length
 		const widths = parentsWidths.concat(valuesWidths)
+		const parentsAndValues = parentNames
+			.map((name, i) => name.padEnd(parentsWidths[i]))
+			.concat(values)
 		const heading = parentsAndValues.join(' | ')
 		const separator = widths.map(width => '-'.repeat(width)).join('-+-')
 		const body = this.cpt
 			.map(
-				dist =>
-					parentsWidths.map(width => ' '.repeat(width) + ' | ').join('') +
+				(dist, row) =>
+					parentsWidths
+						.map(
+							(width, col) =>
+								parentsValues[col][
+									(col == numParents - 1
+										? row
+										: Math.floor(row / parentCumPeriods[col + 1])) %
+										parentPeriods[col]
+								].padEnd(width) + ' | '
+						)
+						.join('') +
 					dist
 						.map((prob, i) =>
 							prob.toFixed(2).toString().padEnd(valuesWidths[i])

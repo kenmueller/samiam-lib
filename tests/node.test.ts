@@ -37,11 +37,6 @@ const initializeNetwork = () => {
 	nodeOutcome.addParent(nodeMedicine)
 	nodeOutcome.addParent(nodeSeverity)
 	nodeAge.setConditionalProbabilityDistribution([], [0.1, 0.2, 0.3, 0.4])
-	// nodeMedicine.setCpt([
-	// 	[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
-	// 	[2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0],
-	// 	[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-	// ])
 	nodeMedicine.setCpt([
 		[1, 2, 1],
 		[2, 0, 1],
@@ -91,7 +86,8 @@ const initializeNetwork = () => {
 	)
 }
 
-beforeAll(initializeNetwork)
+// beforeAll(initializeNetwork)
+initializeNetwork()
 
 test('create invalid node', () => {
 	expect(() => Node.withUniformDistribution('', network, ['1', '2'])).toThrow(
@@ -151,6 +147,7 @@ test('correct CPT index', () => {
 		])
 	).toBe(59)
 })
+
 test('get and set CPT entry', () => {
 	nodeOutcome.setConditionalProbability(
 		'thriving',
@@ -172,7 +169,7 @@ test('get and set CPT entry', () => {
 })
 
 test('add value', () => {
-	// initializeNetwork()
+	initializeNetwork()
 	nodeSeverity.addValue('horrifying')
 	expect(nodeAge.cpt.length).toBe(1)
 	expect(nodeAge.cpt[0].length).toBe(4)
@@ -203,7 +200,7 @@ test('add value', () => {
 })
 
 test('remove value', () => {
-	// initializeNetwork()
+	initializeNetwork()
 	expect(() => nodeMedicine.removeValue('advil')).toThrow(
 		"Value advil doesn't exist for node medicine"
 	)
@@ -231,62 +228,12 @@ test('remove value', () => {
 		[0.9500000000000001, 0.05],
 		[0.9523809523809523, 0.047619047619047616]
 	])
-	// expect(nodeMedicine.cpt).toEqual([
-	// 	[
-	// 		1 / 2,
-	// 		2 / 3,
-	// 		3 / 4,
-	// 		4 / 5,
-	// 		5 / 6,
-	// 		6 / 7,
-	// 		7 / 8,
-	// 		8 / 9,
-	// 		0.8999999999999999,
-	// 		10 / 11,
-	// 		0.9166666666666667,
-	// 		12 / 13,
-	// 		13 / 14,
-	// 		14 / 15,
-	// 		15 / 16,
-	// 		16 / 17,
-	// 		17 / 18,
-	// 		18 / 19,
-	// 		0.9500000000000001,
-	// 		20 / 21
-	// 	],
-	// 	[
-	// 		1 / 2,
-	// 		1 / 3,
-	// 		1 / 4,
-	// 		1 / 5,
-	// 		1 / 6,
-	// 		1 / 7,
-	// 		0.12500000000000003,
-	// 		1 / 9,
-	// 		0.09999999999999999,
-	// 		1 / 11,
-	// 		1 / 12,
-	// 		1 / 13,
-	// 		1 / 14,
-	// 		1 / 15,
-	// 		0.06249999999999999,
-	// 		1 / 17,
-	// 		0.05555555555555556,
-	// 		1 / 19,
-	// 		1 / 20,
-	// 		1 / 21
-	// 	]
-	// ])
 	nodeSeverity.removeValue('extreme')
 	expect(nodeSeverity.cpt).toEqual([
 		[0.4, 0.2, 0.1, 0.3],
 		[0.25, 0.25, 0.25, 0.25],
 		[0.27 / 0.77, 0.13 / 0.77, 0.15 / 0.77, 0.22 / 0.77],
 		[0.25, 0.25, 0.25, 0.25]
-		// [0.4, 0.25, 0.27 / 0.77, 0.25],
-		// [0.2, 0.25, 0.13 / 0.77, 0.25],
-		// [0.1, 0.25, 0.15 / 0.77, 0.25],
-		// [0.3, 0.25, 0.22 / 0.77, 0.25]
 	])
 	nodeAge.removeValue('kid')
 	expect(nodeAge.cpt).toEqual([[0.2 / 0.9, 0.3 / 0.9, 0.4 / 0.9]])
@@ -306,11 +253,10 @@ test('remove value', () => {
 		[0.5, 0.5],
 		[0.5, 0.5],
 		[0.3 / 0.8, 0.5 / 0.8]
-		// [0.5, 0.5, 0.5, 0.3 / 0.8],
-		// [0.5, 0.5, 0.5, 0.5 / 0.8]
 	])
 })
 test('Existing parent cannot be added', () => {
+	initializeNetwork()
 	expect(() => nodeOutcome.addParent(nodeAge)).toThrow(
 		'Node outcome already has parent age'
 	)
@@ -322,7 +268,7 @@ test('Existing parent cannot be added', () => {
 	)
 })
 test('remove parent', () => {
-	// initializeNetwork()
+	initializeNetwork()
 	nodeSeverity.removeParent(nodeAge)
 	expect(nodeSeverity.cpt).toEqual([
 		[
@@ -334,48 +280,9 @@ test('remove parent', () => {
 		]
 	])
 	nodeMedicine.removeParent(nodeSeverity)
-	// expect(nodeMedicine.cpt).toEqual([
-	// 	[
-	// 		(0.25 + 0.625 + 0.75 + 0.8125 + 0.85) / 5,
-	// 		0.8627204374572794,
-	// 		(0.5 +
-	// 			0.7 +
-	// 			0.7857142857142857 +
-	// 			0.8333333333333334 +
-	// 			0.8636363636363636) /
-	// 			5,
-	// 		(0.8 +
-	// 			0.8888888888888888 +
-	// 			0.9230769230769231 +
-	// 			0.9411764705882353 +
-	// 			0.9523809523809523) /
-	// 			5
-	// 	],
-	// 	[
-	// 		(0.5 + 0.25 + 0.16666666666666666 + 0.125 + 0.1) / 5,
-	// 		0,
-	// 		0.1756421356421356,
-	// 		0
-	// 	],
-	// 	[
-	// 		(0.25 + 0.125 + 0.08333333333333333 + 0.0625 + 0.05) / 5,
-	// 		(0.3333333333333333 +
-	// 			0.14285714285714285 +
-	// 			0.09090909090909091 +
-	// 			0.06666666666666667 +
-	// 			0.05263157894736842) /
-	// 			5,
-	// 		0.0878210678210678,
-	// 		(0.2 +
-	// 			0.1111111111111111 +
-	// 			0.07692307692307693 +
-	// 			0.058823529411764705 +
-	// 			0.047619047619047616) /
-	// 			5
-	// 	]
-	// ])
 })
 test('maintain acyclicity', () => {
+	initializeNetwork()
 	expect(() => nodeAge.addParent(nodeAge)).toThrow(
 		'Node age cannot be a parent of itself'
 	)
