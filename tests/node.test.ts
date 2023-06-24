@@ -95,9 +95,17 @@ test('create invalid node', () => {
 	)
 	expect(() =>
 		Node.withUniformDistribution('age', network, ['1', '2'])
-	).toThrow('Duplicate name age for node')
+	).toThrow('Another node already has name age')
 	expect(() => Node.withUniformDistribution('race', network, [])).toThrow(
 		'Must have at least 1 value'
+	)
+})
+
+test('rename node', () => {
+	nodeMedicine.rename('medicine 3.0')
+	expect(nodeMedicine.name).toBe('medicine 3.0')
+	expect(() => nodeMedicine.rename('age')).toThrow(
+		'Another node already has name age'
 	)
 })
 
