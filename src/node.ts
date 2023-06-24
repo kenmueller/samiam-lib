@@ -336,5 +336,42 @@ export default class Node {
 		return heading + '\n' + separator + '\n' + body
 	}
 
-	getCptLatex = () => {}
+	getCptLatex = () => {
+		const parents = this.parents.toReversed()
+		const parentNames = pluck(parents, 'name')
+		const parentsValues = pluck(parents, 'values')
+		const parentPeriods = pluck(parentsValues, 'length')
+		const parentCumPeriods = cumProd(parentPeriods.toReversed()).reverse()
+		const numParents = this.parents.length
+		const parentsAndValues = parentNames.concat(this.values)
+		const header = `\\begin{tabular}{|${'l|'.repeat(
+			parentsAndValues.length
+		)}}\n\t\\hline`
+		// console.log(parents)
+		// console.log(parentNames)
+		// console.log(parentsAndValues)
+		// console.log(header)
+		const footer = `\t\\hline\n\\end{tabular}`
+		const heading = `\t${parentsAndValues.join(' & ')}\\\\\n\t\\hline`
+		const body = this.cpt
+			.map(
+				(dist, row) =>
+					'\t' +
+					parentsValues
+						.map(
+							(values, col) =>
+								values[
+									(col == numParents - 1
+										? row
+										: Math.floor(row / parentCumPeriods[col + 1])) %
+										parentPeriods[col]
+								] + ' & '
+						)
+						.join('') +
+					dist.join(' & ') +
+					'\\\\'
+			)
+			.join('\n')
+		return [header, heading, body, footer].join('\n')
+	}
 }
