@@ -327,4 +327,6 @@ export default class Node {
 			.join('\n')
 		return heading + '\n' + separator + '\n' + body
 	}
+
+	getCptLatex = () => {}
 }
