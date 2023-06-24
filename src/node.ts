@@ -36,12 +36,13 @@ export default class Node {
 
 	constructor(
 		public name: string,
-		network: BeliefNetwork,
+		private network: BeliefNetwork,
 		distribution: DistributionItem[]
 	) {
-		if (!name.length) throw new Error('Name must not be empty')
-		if (network.nodeNames.has(name))
-			throw new Error(`Duplicate name ${name} for node`)
+		// if (!name.length) throw new Error('Name must not be empty')
+		// if (network.nodeNames.has(name))
+		// 	throw new Error(`Duplicate name ${name} for node`)
+		this.validateName(name)
 		if (!distribution.length) throw new Error('Must have at least 1 value')
 		for (const distributionItem of distribution) {
 			this.values.push(distributionItem.value)
@@ -61,6 +62,17 @@ export default class Node {
 			network,
 			values.map(value => ({ value, probability: 1 / values.length }))
 		)
+
+	validateName = (name: string) => {
+		if (!name.length) throw new Error('Name must not be empty')
+		if (this.network.nodeNames.has(name))
+			throw new Error(`Another node already has name ${name}`)
+	}
+
+	rename = (name: string) => {
+		this.validateName(name)
+		this.name = name
+	}
 
 	addValue = (value: string) => {
 		if (this.values.includes(value))
