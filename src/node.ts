@@ -81,6 +81,7 @@ export default class Node {
 		)
 		for (const parent of this.parents) cloned.addParent(parent)
 		cloned.setCpt(clone2dArray(this.cpt))
+		return cloned
 	}
 
 	validateName = (name: string) => {
