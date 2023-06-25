@@ -31,8 +31,13 @@ export const equal2DArrays = <T>(a: T[][], b: T[][]) =>
 
 export const addArrays = (a: number[], b: number[]) => a.map((x, i) => x + b[i])
 
+export const subtractArrays = (a: number[], b: number[]) =>
+	a.map((x, i) => x - b[i])
+
 export const maxArrays = (a: number[], b: number[]) =>
 	a.map((x, i) => Math.max(x, b[i]))
+
+export const clone2dArray = (arr: number[][]) => arr.map(inner => inner.slice())
 
 export const normalizeDistribution = (distribution: number[]) => {
 	const sum = distribution.reduce((total, x) => total + x, 0)

@@ -7,7 +7,8 @@ import {
 	addArrays,
 	normalizeDistribution,
 	randomizeDistribution,
-	maxArrays
+	maxArrays,
+	clone2dArray
 } from './util'
 
 declare global {
@@ -71,6 +72,17 @@ export default class Node {
 		values: string[]
 	) => this.withIdUniformDistribution('', name, network, values)
 
+	clone = (id: Id) => {
+		const cloned = Node.withIdUniformDistribution(
+			id,
+			this.name,
+			this.network,
+			this.values
+		)
+		for (const parent of this.parents) cloned.addParent(parent)
+		cloned.setCpt(clone2dArray(this.cpt))
+	}
+
 	validateName = (name: string) => {
 		if (!name.length) throw new Error('Name must not be empty')
 		if (this.network.nodeNames.has(name))
@@ -80,6 +92,10 @@ export default class Node {
 	rename = (name: string) => {
 		// this.validateName(name)
 		this.name = name
+	}
+
+	setValue = (index: number, value: string) => {
+		this.values[index] = value
 	}
 
 	addValue = (value: string) => {
@@ -347,10 +363,6 @@ export default class Node {
 		const header = `\\begin{tabular}{|${'l|'.repeat(
 			parentsAndValues.length
 		)}}\n\t\\hline`
-		// console.log(parents)
-		// console.log(parentNames)
-		// console.log(parentsAndValues)
-		// console.log(header)
 		const footer = `\t\\hline\n\\end{tabular}`
 		const heading = `\t${parentsAndValues.join(' & ')}\\\\\n\t\\hline`
 		const body = this.cpt
