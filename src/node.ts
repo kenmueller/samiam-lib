@@ -84,6 +84,13 @@ export default class Node {
 		return cloned
 	}
 
+	remove = () => {
+		for (const child of this.children) child.removeParent(this)
+		for (const parent of this.parents) this.removeParent(parent)
+		this.network.nodeNames.delete(this.name)
+		this.network.nodes.delete(this)
+	}
+
 	validateName = (name: string) => {
 		if (!name.length) throw new Error('Name must not be empty')
 		if (this.network.nodeNames.has(name))
@@ -92,6 +99,8 @@ export default class Node {
 
 	rename = (name: string) => {
 		// this.validateName(name)
+		this.network.nodeNames.delete(this.name)
+		this.network.nodeNames.add(name)
 		this.name = name
 	}
 
@@ -278,9 +287,31 @@ export default class Node {
 		parentInstantiations: NodeInstantiation[],
 		probability: number
 	) => {
-		this.cpt[this.getCptParentInstantiationIndex(parentInstantiations)][
-			this.getValueIndex(value)
-		] = probability
+		this.setConditionalProbabilityForValueIndex(
+			this.getValueIndex(value),
+			parentInstantiations,
+			probability
+		)
+	}
+
+	setConditionalProbabilityForValueIndex = (
+		valueIndex: number,
+		parentInstantiations: NodeInstantiation[],
+		probability: number
+	) => {
+		this.setConditionalProbabilityCell(
+			this.getCptParentInstantiationIndex(parentInstantiations),
+			valueIndex,
+			probability
+		)
+	}
+
+	setConditionalProbabilityCell = (
+		rowIndex: number,
+		valueIndex: number,
+		probability: number
+	) => {
+		this.cpt[rowIndex][valueIndex] = probability
 	}
 
 	setConditionalProbabilityDistribution = (

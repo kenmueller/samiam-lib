@@ -331,5 +331,11 @@ test('latex cpt', () => {
 \told & 0.2 & 0.2 & 0.2 & 0.2 & 0.2\\\\
 \t\\hline
 \\end{tabular}`)
-	console.log(nodeSeverity.getCptLatex())
+})
+test('node clone', () => {
+	const clonedAge = nodeAge.clone(2)
+	expect(nodeAge.name).toBe(clonedAge.name)
+	expect(nodeAge.values).toEqual(clonedAge.values)
+	expect(nodeAge.parents).toEqual(clonedAge.parents)
+	expect(nodeAge.cpt).toEqual(clonedAge.cpt)
 })
