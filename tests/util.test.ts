@@ -27,3 +27,14 @@ test('probability complement', () => {
 	expect(util.probComplement(1)).toBe(0)
 	expect(util.probComplement(0)).toBe(1)
 })
+test('clone 2d array', () => {
+	const arr = [
+		[2, 3, 5],
+		[7, 11, 13]
+	]
+	const cloned = util.clone2dArray(arr)
+	expect(arr).toEqual(cloned)
+	cloned[1][2] = 17
+	expect(arr[1][2]).toBe(13)
+	expect(cloned[1][2]).toBe(17)
+})
