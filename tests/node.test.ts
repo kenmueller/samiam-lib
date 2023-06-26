@@ -295,6 +295,12 @@ test('remove parent', () => {
 		]
 	])
 	nodeMedicine.removeParent(nodeSeverity)
+	expect(nodeMedicine.cpt).toEqual([
+		[0.6575, 0.22833333333333333, 0.11416666666666667],
+		[0.8627204374572794, 0, 0.13727956254272042],
+		[0.7365367965367966, 0.1756421356421356, 0.0878210678210678],
+		[0.9011046469869999, 0, 0.09889535301300008]
+	])
 })
 test('maintain acyclicity', () => {
 	initializeNetwork()
