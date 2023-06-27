@@ -10,7 +10,7 @@ export default class BeliefNetwork<NodeLike extends Node = Node> {
 		// this.nodeNames.add(node.name)
 	}
 
-	probability = (evidence: Set<Observation>) => {
-		return 0.5
+	probability = (evidence: Observation[]) => {
+		return Math.random()
 	}
 }
