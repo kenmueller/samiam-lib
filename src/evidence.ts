@@ -1,8 +1,9 @@
 import Intervention from './intervention'
-import Node from './node'
 import Observation from './observation'
 
-export default class Evidence {
-	observations = new Set<Observation>()
-	interventions = new Set<Intervention>()
+export default interface Evidence {
+	observations: Observation[]
+	interventions: Intervention[]
 }
+
+export const NO_EVIDENCE: Evidence = { observations: [], interventions: [] }
