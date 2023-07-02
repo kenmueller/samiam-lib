@@ -84,3 +84,6 @@ const numDecimals = (num: number) => {
 
 export const probComplement = (prob: number) =>
 	Number((1 - prob).toFixed(numDecimals(prob)))
+
+export const areFloatsEqual = (a: number, b: number) =>
+	Math.abs(b - a) < Number.EPSILON
