@@ -12,7 +12,8 @@
 	"scripts": {
 		"build": "tsc",
 		"format": "prettier --write .",
-		"test": "jest --config jestconfig.json"
+		"test": "jest --config jestconfig.json",
+		"release:patch": "npm run build && npm version patch && npm publish"
 	},
 	"devDependencies": {
 		"@types/jest": "^29.5.2",

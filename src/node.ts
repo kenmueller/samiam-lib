@@ -181,13 +181,13 @@ export default class Node {
 
 	addParent = (node: Node) => {
 		if (this === node)
-			throw new Error(`Node ${this.name} cannot be a parent of itself`)
+			throw new Error(`${this.name} cannot be a parent of itself`)
 		if (this.isDescendant(node))
 			throw new Error(
-				`Adding parent node ${node.name} to node ${this.name} induces a cycle`
+				`Adding parent ${node.name} to ${this.name} induces a cycle`
 			)
 		if (this.parents.includes(node))
-			throw new Error(`Node ${this.name} already has parent ${node.name}`)
+			throw new Error(`${this.name} already has parent ${node.name}`)
 		this.parents.push(node)
 		node.children.add(this)
 		this.cpt = Array.from({ length: node.values.length }, () =>
@@ -198,7 +198,7 @@ export default class Node {
 	removeParent = (parent: Node) => {
 		const index = this.parents.indexOf(parent)
 		if (index === -1)
-			throw new Error(`${parent.name} isn't a parent for node ${this.name}`)
+			throw new Error(`${parent.name} isn't a parent for ${this.name}`)
 		this.removeParentIndex(index)
 	}
 
