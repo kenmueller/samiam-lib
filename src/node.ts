@@ -8,7 +8,8 @@ import {
 	normalizeDistribution,
 	randomizeDistribution,
 	maxArrays,
-	clone2dArray
+	clone2dArray,
+	areFloatsEqual
 } from './util'
 
 declare global {
@@ -97,9 +98,13 @@ export default class Node {
 		// 	throw new Error(`Another node already has name ${name}`)
 	}
 
-	validateCpt = () => {
-		this.cpt.every(distribution => distribution.reduce())
-	}
+	validateCpt = () =>
+		this.cpt.every(distribution =>
+			areFloatsEqual(
+				distribution.reduce((sum, probability) => sum + probability, 0),
+				1
+			)
+		)
 
 	rename = (name: string) => {
 		// this.validateName(name)
