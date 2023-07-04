@@ -98,13 +98,22 @@ export default class Node {
 		// 	throw new Error(`Another node already has name ${name}`)
 	}
 
-	validateCpt = () =>
-		this.cpt.every(distribution =>
-			areFloatsEqual(
-				distribution.reduce((sum, probability) => sum + probability, 0),
-				1
-			)
+	get invalidDistributions() {
+		return this.cpt.reduce(
+			(distributionIndices, distribution, distributionIndex) => {
+				if (
+					!areFloatsEqual(
+						distribution.reduce((sum, probability) => sum + probability, 0),
+						1
+					)
+				)
+					distributionIndices.push(distributionIndex)
+
+				return distributionIndices
+			},
+			[] as number[]
 		)
+	}
 
 	rename = (name: string) => {
 		// this.validateName(name)

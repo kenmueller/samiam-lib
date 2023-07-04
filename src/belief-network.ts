@@ -47,5 +47,9 @@ export default class BeliefNetwork<NodeLike extends Node = Node> {
 		}
 	}
 
-	validateCpts = () => Array.from(this.nodes).every(node => node.validateCpt())
+	get invalidNodes() {
+		return Array.from(this.nodes).filter(
+			node => node.invalidDistributions.length > 0
+		)
+	}
 }
