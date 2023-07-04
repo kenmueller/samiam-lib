@@ -46,4 +46,6 @@ export default class BeliefNetwork<NodeLike extends Node = Node> {
 			instantiations: nodes.map(node => ({ node, value: 0 }))
 		}
 	}
+
+	validateCpts = () => Array.from(this.nodes).every(node => node.validateCpt())
 }
