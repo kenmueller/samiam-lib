@@ -246,7 +246,11 @@ export default class Node {
 			)
 		}
 		this.normalizeCpt()
-		this.parents[parentIndex].children.delete(this)
+
+		const childIndex = this.parents[parentIndex].children.indexOf(this)
+		if (childIndex >= 0)
+			this.parents[parentIndex].children.splice(childIndex, 1)
+
 		this.parents.splice(parentIndex, 1)
 	}
 
