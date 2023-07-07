@@ -246,6 +246,7 @@ export default class Node {
 			)
 		}
 		this.normalizeCpt()
+		this.parents[parentIndex].children.delete(this)
 		this.parents.splice(parentIndex, 1)
 	}
 
