@@ -4,11 +4,10 @@ import Node from './node'
 import { pluck } from './util'
 
 export default class BeliefNetwork<NodeLike extends Node = Node> {
-	nodes = new Set<NodeLike>()
-	// nodeNames = new Set<string>()
+	nodes: NodeLike[] = []
 
 	addNode = (node: NodeLike) => {
-		this.nodes.add(node)
+		this.nodes.push(node)
 		// this.nodeNames.add(node.name)
 	}
 
@@ -28,9 +27,7 @@ export default class BeliefNetwork<NodeLike extends Node = Node> {
 			...pluck(evidence.observations, 'node'),
 			...pluck(evidence.interventions, 'node')
 		])
-		const nonEvidenceNodes = Array.from(this.nodes).filter(
-			node => !evidenceNodes.has(node)
-		)
+		const nonEvidenceNodes = this.nodes.filter(node => !evidenceNodes.has(node))
 		return {
 			jointProbability: Math.random(),
 			condProbability: Math.random(),
@@ -51,5 +48,24 @@ export default class BeliefNetwork<NodeLike extends Node = Node> {
 		return Array.from(this.nodes).filter(
 			node => node.invalidDistributions.length > 0
 		)
+	}
+
+	minDegreeOrder = (nodes: NodeLike[] = this.nodes) => {
+		// const pi = new Array<NodeLike>(nodes.length)
+		// for (let i = 0; i < pi.length; i++) {
+		// 	pi[i] = nodes.
+		// }
+		// return pi
+		// const nodeDegrees = new Map<NodeLike, number>()
+		// nodesArray.forEach(node => nodeDegrees.set(node, 0))
+		// nodesArray.forEach(node => {
+		// 	node.children.forEach(child => {
+		// 		nodeDegrees.set(child, nodeDegrees.get(child)! + 1)
+		// 	})
+		// })
+		// const sortedNodes = nodesArray.sort(
+		// 	(a, b) => nodeDegrees.get(a)! - nodeDegrees.get(b)!
+		// )
+		// return sortedNodes
 	}
 }
