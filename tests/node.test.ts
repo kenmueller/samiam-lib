@@ -1,5 +1,6 @@
 import BeliefNetwork from '../src/belief-network'
 import Node from '../src/node'
+import { pluck } from '../src/util'
 
 let network: BeliefNetwork<Node>
 let nodeAge: Node, nodeMedicine: Node, nodeSeverity: Node, nodeOutcome: Node
@@ -273,13 +274,13 @@ test('remove value', () => {
 test('Existing parent cannot be added', () => {
 	initializeNetwork()
 	expect(() => nodeOutcome.addParent(nodeAge)).toThrow(
-		'Node outcome already has parent age'
+		'outcome already has parent age'
 	)
 	expect(() => nodeOutcome.addParent(nodeMedicine)).toThrow(
-		'Node outcome already has parent medicine'
+		'outcome already has parent medicine'
 	)
 	expect(() => nodeOutcome.addParent(nodeSeverity)).toThrow(
-		'Node outcome already has parent severity'
+		'outcome already has parent severity'
 	)
 })
 test('remove parent', () => {
@@ -294,28 +295,49 @@ test('remove parent', () => {
 			1.13 / 4
 		]
 	])
+	// ensure new value to former parent doesn't affect CPT
+	nodeAge.addValue('dummy')
+	expect(nodeSeverity.cpt).toEqual([
+		[
+			0.21750000000000003,
+			0.15750000000000003,
+			0.15000000000000002,
+			0.77 / 4,
+			1.13 / 4
+		]
+	])
 	nodeMedicine.removeParent(nodeSeverity)
 	expect(nodeMedicine.cpt).toEqual([
 		[0.6575, 0.22833333333333333, 0.11416666666666667],
 		[0.8627204374572794, 0, 0.13727956254272042],
 		[0.7365367965367966, 0.1756421356421356, 0.0878210678210678],
-		[0.9011046469869999, 0, 0.09889535301300008]
+		[0.9011046469869999, 0, 0.09889535301300008],
+		[1 / 3, 1 / 3, 1 / 3]
+	])
+	// ensure new value to former parent doesn't affect CPT
+	nodeSeverity.addValue('dummy')
+	expect(nodeMedicine.cpt).toEqual([
+		[0.6575, 0.22833333333333333, 0.11416666666666667],
+		[0.8627204374572794, 0, 0.13727956254272042],
+		[0.7365367965367966, 0.1756421356421356, 0.0878210678210678],
+		[0.9011046469869999, 0, 0.09889535301300008],
+		[1 / 3, 1 / 3, 1 / 3]
 	])
 })
 test('maintain acyclicity', () => {
 	initializeNetwork()
 	expect(() => nodeAge.addParent(nodeAge)).toThrow(
-		'Node age cannot be a parent of itself'
+		'age cannot be a parent of itself'
 	)
 	expect(nodeAge.parents).toEqual([])
 	expect(() => nodeAge.addParent(nodeMedicine)).toThrow(
-		'Adding parent node medicine to node age induces a cycle'
+		'Adding parent medicine to age induces a cycle'
 	)
 	expect(() => nodeMedicine.addParent(nodeOutcome)).toThrow(
-		'Adding parent node outcome to node medicine induces a cycle'
+		'Adding parent outcome to medicine induces a cycle'
 	)
 	expect(() => nodeSeverity.addParent(nodeMedicine)).toThrow(
-		'Adding parent node medicine to node severity induces a cycle'
+		'Adding parent medicine to severity induces a cycle'
 	)
 })
 test('latex cpt', () => {
