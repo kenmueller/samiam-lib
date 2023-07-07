@@ -49,23 +49,4 @@ export default class BeliefNetwork<NodeLike extends Node = Node> {
 			node => node.invalidDistributions.length > 0
 		)
 	}
-
-	minDegreeOrder = (nodes: NodeLike[] = this.nodes) => {
-		// const pi = new Array<NodeLike>(nodes.length)
-		// for (let i = 0; i < pi.length; i++) {
-		// 	pi[i] = nodes.
-		// }
-		// return pi
-		// const nodeDegrees = new Map<NodeLike, number>()
-		// nodesArray.forEach(node => nodeDegrees.set(node, 0))
-		// nodesArray.forEach(node => {
-		// 	node.children.forEach(child => {
-		// 		nodeDegrees.set(child, nodeDegrees.get(child)! + 1)
-		// 	})
-		// })
-		// const sortedNodes = nodesArray.sort(
-		// 	(a, b) => nodeDegrees.get(a)! - nodeDegrees.get(b)!
-		// )
-		// return sortedNodes
-	}
 }
