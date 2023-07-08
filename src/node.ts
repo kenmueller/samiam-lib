@@ -28,6 +28,14 @@ if (!Array.prototype.toReversed)
 		enumerable: false
 	})
 
+export interface CptInstantiation {
+	/** Node to value index. */
+	instantiations: Map<Node, number>
+
+	/** Between 0 and 1. */
+	probability: number
+}
+
 export type Id = string | number | symbol
 
 export default class Node {
