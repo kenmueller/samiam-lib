@@ -28,12 +28,20 @@ if (!Array.prototype.toReversed)
 		enumerable: false
 	})
 
+export interface CptInstantiation {
+	/** Node to value index. */
+	instantiations: Map<Node, number>
+
+	/** Between 0 and 1. */
+	probability: number
+}
+
 export type Id = string | number | symbol
 
 export default class Node {
 	// /** indices of parents in the CPT */
 	parents: Node[] = []
-	children = new Set<Node>()
+	children: Node[] = []
 	values: string[] = []
 	valueIndices = new Map<string, number>()
 	cpt: number[][] = [[]]
@@ -88,8 +96,9 @@ export default class Node {
 	remove = () => {
 		for (const child of this.children) child.removeParent(this)
 		for (const parent of this.parents) this.removeParent(parent)
-		// this.network.nodeNames.delete(this.name)
-		this.network.nodes.delete(this)
+
+		const thisIndex = this.network.nodes.indexOf(this)
+		if (thisIndex >= 0) this.network.nodes.splice(thisIndex, 1)
 	}
 
 	validateName = (name: string) => {
@@ -207,7 +216,7 @@ export default class Node {
 		if (this.parents.includes(node))
 			throw new Error(`${this.name} already has parent ${node.name}`)
 		this.parents.push(node)
-		node.children.add(this)
+		node.children.push(this)
 		this.cpt = Array.from({ length: node.values.length }, () =>
 			this.cpt.map(row => row.slice())
 		).flat()
@@ -245,7 +254,11 @@ export default class Node {
 			)
 		}
 		this.normalizeCpt()
-		this.parents[parentIndex].children.delete(this)
+
+		const childIndex = this.parents[parentIndex].children.indexOf(this)
+		if (childIndex >= 0)
+			this.parents[parentIndex].children.splice(childIndex, 1)
+
 		this.parents.splice(parentIndex, 1)
 	}
 

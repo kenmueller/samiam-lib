@@ -4,11 +4,10 @@ import Node from './node'
 import { pluck } from './util'
 
 export default class BeliefNetwork<NodeLike extends Node = Node> {
-	nodes = new Set<NodeLike>()
-	// nodeNames = new Set<string>()
+	nodes: NodeLike[] = []
 
 	addNode = (node: NodeLike) => {
-		this.nodes.add(node)
+		this.nodes.push(node)
 		// this.nodeNames.add(node.name)
 	}
 
@@ -28,9 +27,7 @@ export default class BeliefNetwork<NodeLike extends Node = Node> {
 			...pluck(evidence.observations, 'node'),
 			...pluck(evidence.interventions, 'node')
 		])
-		const nonEvidenceNodes = Array.from(this.nodes).filter(
-			node => !evidenceNodes.has(node)
-		)
+		const nonEvidenceNodes = this.nodes.filter(node => !evidenceNodes.has(node))
 		return {
 			jointProbability: Math.random(),
 			condProbability: Math.random(),
