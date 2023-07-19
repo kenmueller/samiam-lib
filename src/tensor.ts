@@ -58,7 +58,16 @@ export default class Tensor {
 				`Can only insert a dimension between 0 and ${this._shape.length}`
 			)
 		const newShape = this._shape.toSpliced(dimension, 0, 1)
-		return new Tensor(newShape, Tensor.calcStride(newShape), this._cells)
+		const newStride = this._stride.toSpliced(
+			dimension,
+			0,
+			dimension === 0
+				? this._shape.length === 0
+					? 1
+					: this._stride[0] * this._shape[0]
+				: this._stride[dimension - 1]
+		)
+		return new Tensor(newShape, newStride, this._cells)
 	}
 
 	expand = (sizes: number[]) => {

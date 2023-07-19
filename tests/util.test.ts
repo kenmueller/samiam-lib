@@ -38,3 +38,10 @@ test('clone 2d array', () => {
 	expect(arr[1][2]).toBe(13)
 	expect(cloned[1][2]).toBe(17)
 })
+test('product', () => {
+	expect(util.product([])).toBe(1)
+	expect(util.product([0])).toBe(0)
+	expect(util.product([2])).toBe(2)
+	expect(util.product([1, 2, 3, 4, 5, 6])).toBe(720)
+	expect(util.product([0.2, 687, 0, 1, 32.45])).toBe(0)
+})
