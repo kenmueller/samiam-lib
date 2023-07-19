@@ -37,6 +37,8 @@ export const subtractArrays = (a: number[], b: number[]) =>
 export const maxArrays = (a: number[], b: number[]) =>
 	a.map((x, i) => Math.max(x, b[i]))
 
+export const pretty1dArray = <T>(a: T[]) => `[${a.join(', ')}]`
+
 export const clone2dArray = (arr: number[][]) => arr.map(inner => inner.slice())
 
 export const normalizeDistribution = (distribution: number[]) => {
