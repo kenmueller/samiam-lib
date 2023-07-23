@@ -1,8 +1,9 @@
-import { pretty1dArray } from './util'
+import { pluck, pretty1dArray, sequence } from './util'
 
 declare global {
 	interface Array<T> {
 		toSpliced(start: number, deleteCount: number, ...args: unknown[]): Array<T>
+		toSorted(): Array<T>
 	}
 }
 
@@ -12,6 +13,16 @@ if (!Array.prototype.toSpliced)
 			const toSplice = [...this]
 			toSplice.splice(start, deleteCount, ...args)
 			return toSplice
+		},
+		enumerable: false
+	})
+
+if (!Array.prototype.toSorted)
+	Object.defineProperty(Array.prototype, 'toSorted', {
+		value: function () {
+			const toSort = [...this]
+			toSort.sort()
+			return toSort
 		},
 		enumerable: false
 	})
@@ -50,6 +61,22 @@ export default class Tensor {
 
 	get stride() {
 		return Object.freeze(this._stride)
+	}
+
+	subTensorString = (depth: number, cellsIndex: number): string =>
+		depth === this._shape.length
+			? this._cells[cellsIndex].toString()
+			: `[${sequence(this._shape[depth])
+					.map(i =>
+						this.subTensorString(
+							depth + 1,
+							i * this._stride[depth] + cellsIndex
+						)
+					)
+					.join(',')}]`
+
+	get string() {
+		return this.subTensorString(0, 0)
 	}
 
 	unsqueeze = (dimension: number) => {
@@ -92,6 +119,32 @@ export default class Tensor {
 				newShape[i] = sizes[i]
 				newStride[i] = 0
 			}
+		return new Tensor(newShape, newStride, this._cells)
+	}
+
+	permute = (dimensions: number[]) => {
+		if (dimensions.length !== this._shape.length)
+			throw new Error(
+				`Input dimensions (${dimensions.length}) must match existing dimensions (${this._shape.length})`
+			)
+		const sortedDimensions = dimensions.toSorted()
+		if (sortedDimensions[0] < 0)
+			throw new Error(
+				`Input dimension (${sortedDimensions[0]}) cannot be negative`
+			)
+		else if (sortedDimensions[0] > 0)
+			throw new Error('Input dimension (0) is missing')
+		for (let i = 1; i < sortedDimensions.length; i++)
+			if (sortedDimensions[i] < i)
+				throw new Error(
+					`Duplicate dimension (${sortedDimensions[i]}) is not allowed`
+				)
+			else if (sortedDimensions[i] > i)
+				throw new Error(
+					`Input dimension (${sortedDimensions[i - 1] + 1}) is missing`
+				)
+		const newShape = dimensions.map(i => this._shape[i])
+		const newStride = dimensions.map(i => this._stride[i])
 		return new Tensor(newShape, newStride, this._cells)
 	}
 }

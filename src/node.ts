@@ -1,9 +1,12 @@
 import BeliefNetwork from './belief-network'
 import DistributionItem from './distribution-item'
 import NodeInstantiation from './node-instantiation'
+import Tensor from './tensor'
 import {
 	pluck,
+	doublePluck,
 	cumProd,
+	product,
 	addArrays,
 	normalizeDistribution,
 	randomizeDistribution,
@@ -15,6 +18,7 @@ import {
 declare global {
 	interface Array<T> {
 		toReversed(): Array<T>
+		toSorted(): Array<T>
 	}
 }
 
@@ -24,6 +28,16 @@ if (!Array.prototype.toReversed)
 			const rev = [...this]
 			rev.reverse()
 			return rev
+		},
+		enumerable: false
+	})
+
+if (!Array.prototype.toSorted)
+	Object.defineProperty(Array.prototype, 'toSorted', {
+		value: function () {
+			const toSort = [...this]
+			toSort.sort()
+			return toSort
 		},
 		enumerable: false
 	})
@@ -45,6 +59,8 @@ export default class Node {
 	values: string[] = []
 	valueIndices = new Map<string, number>()
 	cpt: number[][] = [[]]
+	cptStride: number[]
+	factor: Tensor
 
 	constructor(
 		public id: Id,
@@ -59,6 +75,8 @@ export default class Node {
 			this.valueIndices.set(distributionItem.value, this.valueIndices.size)
 			this.cpt[0].push(distributionItem.probability)
 		}
+		this.cptStride = this.calcCptStride()
+		this.factor = this.calcFactor()
 		network.addNode(this)
 	}
 
@@ -91,6 +109,25 @@ export default class Node {
 		for (const parent of this.parents) cloned.addParent(parent)
 		cloned.setCpt(clone2dArray(this.cpt))
 		return cloned
+	}
+
+	calcCptStride = () =>
+		this.parents
+			.slice(1)
+			.reduceRight(
+				(stride, dim) => [dim.values.length * stride[0], ...stride],
+				[1]
+			)
+
+	calcFactor = () => {
+		const sortedNodes = this.parents.concat(this).toSorted()
+		const shape = doublePluck(sortedNodes, 'values', 'length')
+		const size = product(shape)
+		const cells = new Array(size)
+		const factor = Tensor.withShapeAndCells(shape, cells)
+		// for (const nodeIndex = )
+		// this.factor =
+		return factor
 	}
 
 	remove = () => {
@@ -370,6 +407,7 @@ export default class Node {
 				`CPT should have ${this.cpt[0].length} rows, not ${probabilities[0].length}`
 			)
 		this.cpt = probabilities
+		this.factor = this.calcFactor()
 	}
 
 	getCptText = () => {

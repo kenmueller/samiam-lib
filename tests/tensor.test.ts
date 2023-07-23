@@ -73,3 +73,29 @@ test('expand', () => {
 		large.unsqueeze(3).unsqueeze(5).expand([2, 2, 3, 3, 4, 4]).stride
 	).toEqual([24, 12, 4, 0, 1, 0])
 })
+test('permute', () => {
+	expect(() => small.permute([1])).toThrow(
+		'Input dimensions (1) must match existing dimensions (2)'
+	)
+	expect(() => large.permute([0, 1, 2, 3, 4, 5])).toThrow(
+		'Input dimensions (6) must match existing dimensions (4)'
+	)
+	expect(() => small.permute([-3, 0])).toThrow(
+		'Input dimension (-3) cannot be negative'
+	)
+	expect(() => medium.permute([1, 2, 2])).toThrow(
+		'Input dimension (0) is missing'
+	)
+	expect(() => large.permute([1, 2, 0, 2])).toThrow(
+		'Duplicate dimension (2) is not allowed'
+	)
+	expect(() => large.permute([1, 2, 0, 8])).toThrow(
+		'Input dimension (3) is missing'
+	)
+	expect(small.permute([0, 1]).string).toBe('[[3],[5]]')
+	expect(small.permute([1, 0]).string).toBe('[[3,5]]')
+	const mediumPermuted = medium.permute([1, 2, 0])
+	expect(mediumPermuted.string).toBe('[[[5,13],[7,17],[11,19]]]')
+	expect(mediumPermuted.shape).toEqual([1, 3, 2])
+	expect(mediumPermuted.stride).toEqual([3, 1, 3])
+})

@@ -91,3 +91,5 @@ export const probComplement = (prob: number) =>
 
 export const areFloatsEqual = (a: number, b: number) =>
 	Math.abs(b - a) < Number.EPSILON
+
+export const sequence = (end: number) => [...new Array(end).keys()]
