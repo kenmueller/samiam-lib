@@ -1,3 +1,19 @@
+declare global {
+	interface Array<T> {
+		toSorted(comparator: (a: T, b: T) => number): Array<T>
+	}
+}
+
+if (!Array.prototype.toSorted)
+	Object.defineProperty(Array.prototype, 'toSorted', {
+		value: function (comparator: <T>(a: T, b: T) => number) {
+			const toSort = [...this]
+			toSort.sort(comparator)
+			return toSort
+		},
+		enumerable: false
+	})
+
 export const isSubset = <T>(subset: T[], superset: T[]): boolean =>
 	new Set([...subset, ...superset]).size === superset.length
 
@@ -8,7 +24,7 @@ export const doublePluck = <T, K1 extends keyof T, K2 extends keyof T[K1]>(
 	objects: T[],
 	key1: K1,
 	key2: K2
-) => pluck(pluck(objects, key1), key2)
+) => objects.map(object => object[key1][key2])
 
 export const cumSum = (array: number[]) =>
 	array.reduce(
@@ -22,7 +38,10 @@ export const cumProd = (array: number[]) =>
 		[]
 	)
 
-export const equalArrays = <T>(a: T[], b: T[]) =>
+export const dotProd = (a: readonly number[], b: number[]) =>
+	a.reduce((total, x, i) => total + x * b[i], 0)
+
+export const equalArrays = <T>(a: readonly T[], b: readonly T[]) =>
 	a.length === b.length && a.every((element, index) => element === b[index])
 
 export const equal2DArrays = <T>(a: T[][], b: T[][]) =>
@@ -37,9 +56,10 @@ export const subtractArrays = (a: number[], b: number[]) =>
 export const maxArrays = (a: number[], b: number[]) =>
 	a.map((x, i) => Math.max(x, b[i]))
 
-export const product = (a: number[]) => a.reduce((prod, x) => prod * x, 1)
+export const product = (a: readonly number[]) =>
+	a.reduce((prod, x) => prod * x, 1)
 
-export const pretty1dArray = <T>(a: T[]) => `[${a.join(', ')}]`
+export const pretty1dArray = <T>(a: readonly T[]) => `[${a.join(', ')}]`
 
 export const clone2dArray = (arr: number[][]) => arr.map(inner => inner.slice())
 
@@ -93,3 +113,11 @@ export const areFloatsEqual = (a: number, b: number) =>
 	Math.abs(b - a) < Number.EPSILON
 
 export const sequence = (end: number) => [...new Array(end).keys()]
+
+export const toSortedWithIndex = <T>(
+	array: T[],
+	comparator: (a: T, b: T) => number
+): [T, number][] =>
+	array
+		.map((a, i) => [a, i] as [T, number])
+		.toSorted(([a], [b]) => comparator(a, b))

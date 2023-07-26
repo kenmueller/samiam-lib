@@ -99,3 +99,33 @@ test('permute', () => {
 	expect(mediumPermuted.shape).toEqual([1, 3, 2])
 	expect(mediumPermuted.stride).toEqual([3, 1, 3])
 })
+test('unsqueeze, expand, and permute', () => {
+	expect(small.permute([1, 0]).unsqueeze(1).expand([1, 3, 2]).string).toBe(
+		'[[[3,5],[3,5],[3,5]]]'
+	)
+})
+test('value at', () => {
+	expect(small.valueAt([0, 0])).toBe(3)
+	expect(small.valueAt([1, 0])).toBe(5)
+	expect(medium.valueAt([0, 0, 0])).toBe(5)
+	expect(medium.valueAt([0, 0, 1])).toBe(7)
+	expect(medium.valueAt([0, 0, 2])).toBe(11)
+	expect(medium.valueAt([1, 0, 0])).toBe(13)
+	expect(medium.valueAt([1, 0, 1])).toBe(17)
+	expect(medium.valueAt([1, 0, 2])).toBe(19)
+	expect(large.valueAt([0, 0, 0, 0])).toBe(0)
+	expect(large.valueAt([1, 1, 2, 3])).toBe(47)
+})
+test('multiply', () => {
+	expect(() => small.multiply(medium)).toThrow(
+		'This tensor shape ([2, 1]) must match input tensor shape ([2, 1, 3])'
+	)
+	const result = small
+		.permute([1, 0])
+		.unsqueeze(1)
+		.expand([1, 3, 2])
+		.multiply(medium.permute([1, 2, 0]))
+	expect(result.shape).toEqual([1, 3, 2])
+	expect(result.stride).toEqual([6, 2, 1])
+	expect(result.cells).toEqual([15, 65, 21, 85, 33, 95])
+})

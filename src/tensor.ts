@@ -1,4 +1,4 @@
-import { pluck, pretty1dArray, sequence } from './util'
+import { equalArrays, product, pretty1dArray, sequence, dotProd } from './util'
 
 declare global {
 	interface Array<T> {
@@ -61,6 +61,10 @@ export default class Tensor {
 
 	get stride() {
 		return Object.freeze(this._stride)
+	}
+
+	get cells() {
+		return Object.freeze(this._cells)
 	}
 
 	subTensorString = (depth: number, cellsIndex: number): string =>
@@ -146,5 +150,39 @@ export default class Tensor {
 		const newShape = dimensions.map(i => this._shape[i])
 		const newStride = dimensions.map(i => this._stride[i])
 		return new Tensor(newShape, newStride, this._cells)
+	}
+
+	static incrementIndex = (index: number[], shape: readonly number[]) => {
+		for (let dim = index.length - 1; dim >= 0; dim--) {
+			index[dim] = (index[dim] + 1) % shape[dim]
+			if (index[dim] !== 0) return
+		}
+	}
+
+	static forEachIndex = (
+		shape: readonly number[],
+		fn: (index: readonly number[], i: number) => any
+	) => {
+		const index = Array(shape.length).fill(0)
+		const indexCount = product(shape)
+		for (let i = 0; i < indexCount; i++, Tensor.incrementIndex(index, shape))
+			fn(index, i)
+	}
+
+	valueAt = (index: readonly number[]) =>
+		this._cells[dotProd(index, this._stride)]
+
+	multiply = (tensor: Tensor) => {
+		if (!equalArrays(this.shape, tensor.shape))
+			throw new Error(
+				`This tensor shape (${pretty1dArray(
+					this.shape
+				)}) must match input tensor shape (${pretty1dArray(tensor.shape)})`
+			)
+		const cells = Array(this.shape.length)
+		Tensor.forEachIndex(this.shape, (index, i) => {
+			cells[i] = this.valueAt(index) * tensor.valueAt(index)
+		})
+		return Tensor.withShapeAndCells(this._shape.slice(), cells)
 	}
 }

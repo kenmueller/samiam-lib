@@ -12,7 +12,8 @@ import {
 	randomizeDistribution,
 	maxArrays,
 	clone2dArray,
-	areFloatsEqual
+	areFloatsEqual,
+	toSortedWithIndex
 } from './util'
 
 declare global {
@@ -60,7 +61,7 @@ export default class Node {
 	valueIndices = new Map<string, number>()
 	cpt: number[][] = [[]]
 	cptStride: number[]
-	factor: Tensor
+	_factor: Tensor
 
 	constructor(
 		public id: Id,
@@ -76,7 +77,7 @@ export default class Node {
 			this.cpt[0].push(distributionItem.probability)
 		}
 		this.cptStride = this.calcCptStride()
-		this.factor = this.calcFactor()
+		this._factor = this.calcFactor()
 		network.addNode(this)
 	}
 
@@ -119,15 +120,16 @@ export default class Node {
 				[1]
 			)
 
+	static comparator = (nodeA: Node, nodeB: Node) =>
+		nodeA.name.localeCompare(nodeB.name)
+
 	calcFactor = () => {
-		const sortedNodes = this.parents.concat(this).toSorted()
-		const shape = doublePluck(sortedNodes, 'values', 'length')
-		const size = product(shape)
-		const cells = new Array(size)
+		const nodes = this.parents.concat(this)
+		const shape = nodes.map(node => node.values.length)
+		const cells = this.cpt.flat()
 		const factor = Tensor.withShapeAndCells(shape, cells)
-		// for (const nodeIndex = )
-		// this.factor =
-		return factor
+		const sortedNodes = toSortedWithIndex(nodes, Node.comparator)
+		return factor.permute(sortedNodes.map((_node, i) => i))
 	}
 
 	remove = () => {
@@ -142,6 +144,10 @@ export default class Node {
 		if (!name.length) throw new Error('Name must not be empty')
 		// if (this.network.nodeNames.has(name))
 		// 	throw new Error(`Another node already has name ${name}`)
+	}
+
+	get factor() {
+		return Object.freeze(this._factor)
 	}
 
 	get invalidDistributions() {
@@ -407,7 +413,7 @@ export default class Node {
 				`CPT should have ${this.cpt[0].length} rows, not ${probabilities[0].length}`
 			)
 		this.cpt = probabilities
-		this.factor = this.calcFactor()
+		this._factor = this.calcFactor()
 	}
 
 	getCptText = () => {

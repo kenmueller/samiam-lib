@@ -45,3 +45,6 @@ test('product', () => {
 	expect(util.product([1, 2, 3, 4, 5, 6])).toBe(720)
 	expect(util.product([0.2, 687, 0, 1, 32.45])).toBe(0)
 })
+test('dot product', () => {
+	expect(util.dotProd([2, 3, 5], [7, 11, 13])).toBe(112)
+})
