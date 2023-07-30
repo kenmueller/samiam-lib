@@ -27,6 +27,9 @@ test('probability complement', () => {
 	expect(util.probComplement(1)).toBe(0)
 	expect(util.probComplement(0)).toBe(1)
 })
+test('max arrays', () => {
+	expect(util.maxArrays([1, 5, 7], [2, 3, 7])).toEqual([2, 5, 7])
+})
 test('clone 2d array', () => {
 	const arr = [
 		[2, 3, 5],

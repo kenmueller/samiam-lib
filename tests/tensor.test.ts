@@ -118,7 +118,7 @@ test('value at', () => {
 })
 test('multiply', () => {
 	expect(() => small.multiply(medium)).toThrow(
-		'This tensor shape ([2, 1]) must match input tensor shape ([2, 1, 3])'
+		'This tensor ([2, 1]) must match number of dimensions of input tensor ([2, 1, 3])'
 	)
 	const result = small
 		.permute([1, 0])

@@ -1,19 +1,17 @@
 import BeliefNetwork from './belief-network'
 import DistributionItem from './distribution-item'
 import NodeInstantiation from './node-instantiation'
-import Tensor from './tensor'
+// import Tensor from './tensor'
+import Factor from './factor'
 import {
 	pluck,
-	doublePluck,
 	cumProd,
-	product,
 	addArrays,
 	normalizeDistribution,
 	randomizeDistribution,
 	maxArrays,
 	clone2dArray,
-	areFloatsEqual,
-	toSortedWithIndex
+	areFloatsEqual
 } from './util'
 
 declare global {
@@ -61,7 +59,7 @@ export default class Node {
 	valueIndices = new Map<string, number>()
 	cpt: number[][] = [[]]
 	cptStride: number[]
-	_factor: Tensor
+	_factor: Factor
 
 	constructor(
 		public id: Id,
@@ -77,7 +75,7 @@ export default class Node {
 			this.cpt[0].push(distributionItem.probability)
 		}
 		this.cptStride = this.calcCptStride()
-		this._factor = this.calcFactor()
+		this._factor = Factor.fromNode(this)
 		network.addNode(this)
 	}
 
@@ -123,15 +121,6 @@ export default class Node {
 	static comparator = (nodeA: Node, nodeB: Node) =>
 		nodeA.name.localeCompare(nodeB.name)
 
-	calcFactor = () => {
-		const nodes = this.parents.concat(this)
-		const shape = nodes.map(node => node.values.length)
-		const cells = this.cpt.flat()
-		const factor = Tensor.withShapeAndCells(shape, cells)
-		const sortedNodes = toSortedWithIndex(nodes, Node.comparator)
-		return factor.permute(sortedNodes.map((_node, i) => i))
-	}
-
 	remove = () => {
 		for (const child of this.children) child.removeParent(this)
 		for (const parent of this.parents) this.removeParent(parent)
@@ -147,7 +136,7 @@ export default class Node {
 	}
 
 	get factor() {
-		return Object.freeze(this._factor)
+		return this._factor
 	}
 
 	get invalidDistributions() {
@@ -206,6 +195,7 @@ export default class Node {
 					new Array(this.values.length).fill(1 / this.values.length)
 				)
 			)
+		this._factor = Factor.fromNode(this)
 	}
 
 	removeValue = (value: string) => {
@@ -239,6 +229,7 @@ export default class Node {
 				rep * parentPeriod + valueIndex * prevParentsPeriod,
 				prevParentsPeriod
 			)
+		this._factor = Factor.fromNode(this)
 	}
 
 	/** assume acyclic */
@@ -263,6 +254,7 @@ export default class Node {
 		this.cpt = Array.from({ length: node.values.length }, () =>
 			this.cpt.map(row => row.slice())
 		).flat()
+		this._factor = Factor.fromNode(this)
 	}
 
 	removeParent = (parent: Node) => {
@@ -296,21 +288,23 @@ export default class Node {
 				prevParentsPeriod * (parentValues - 1)
 			)
 		}
-		this.normalizeCpt()
 
 		const childIndex = this.parents[parentIndex].children.indexOf(this)
 		if (childIndex >= 0)
 			this.parents[parentIndex].children.splice(childIndex, 1)
 
 		this.parents.splice(parentIndex, 1)
+		this.normalizeCpt()
 	}
 
 	normalizeCpt = () => {
 		this.cpt.forEach(normalizeDistribution)
+		this._factor = Factor.fromNode(this)
 	}
 
 	randomizeCpt = () => {
 		this.cpt.forEach(randomizeDistribution)
+		this._factor = Factor.fromNode(this)
 	}
 
 	getValueIndex = (value: string) => {
@@ -387,6 +381,7 @@ export default class Node {
 		probability: number
 	) => {
 		this.cpt[parentInstantiationIndex][valueIndex] = probability
+		this._factor = Factor.fromNode(this)
 	}
 
 	setConditionalProbabilityDistribution = (
@@ -401,6 +396,7 @@ export default class Node {
 		const row =
 			this.cpt[this.getCptParentInstantiationIndex(parentInstantiations)]
 		for (let i = 0; i < row.length; i++) row[i] = probabilities[i]
+		this._factor = Factor.fromNode(this)
 	}
 
 	setCpt = (probabilities: number[][]) => {
@@ -413,7 +409,7 @@ export default class Node {
 				`CPT should have ${this.cpt[0].length} rows, not ${probabilities[0].length}`
 			)
 		this.cpt = probabilities
-		this._factor = this.calcFactor()
+		this._factor = Factor.fromNode(this)
 	}
 
 	getCptText = () => {

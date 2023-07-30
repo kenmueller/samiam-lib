@@ -1,6 +1,5 @@
 import BeliefNetwork from '../src/belief-network'
 import Node from '../src/node'
-import { pluck } from '../src/util'
 
 let network: BeliefNetwork<Node>
 let nodeAge: Node, nodeMedicine: Node, nodeSeverity: Node, nodeOutcome: Node

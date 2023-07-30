@@ -1,4 +1,11 @@
-import { equalArrays, product, pretty1dArray, sequence, dotProd } from './util'
+import {
+	equalArrays,
+	maxArrays,
+	product,
+	pretty1dArray,
+	sequence,
+	dotProd
+} from './util'
 
 declare global {
 	interface Array<T> {
@@ -65,6 +72,12 @@ export default class Tensor {
 
 	get cells() {
 		return Object.freeze(this._cells)
+	}
+
+	toString() {
+		return `shape: ${pretty1dArray(this._shape)}, stride: ${pretty1dArray(
+			this._stride
+		)}, cells: ${pretty1dArray(this._cells)}`
 	}
 
 	subTensorString = (depth: number, cellsIndex: number): string =>
@@ -172,17 +185,39 @@ export default class Tensor {
 	valueAt = (index: readonly number[]) =>
 		this._cells[dotProd(index, this._stride)]
 
-	multiply = (tensor: Tensor) => {
-		if (!equalArrays(this.shape, tensor.shape))
+	multiply = (other: Tensor) => {
+		if (this._shape.length !== other.shape.length)
 			throw new Error(
-				`This tensor shape (${pretty1dArray(
+				`This tensor (${pretty1dArray(
 					this.shape
-				)}) must match input tensor shape (${pretty1dArray(tensor.shape)})`
+				)}) must match number of dimensions of input tensor (${pretty1dArray(
+					other.shape
+				)})`
 			)
-		const cells = Array(this.shape.length)
-		Tensor.forEachIndex(this.shape, (index, i) => {
-			cells[i] = this.valueAt(index) * tensor.valueAt(index)
+		for (let i = 0; i < this._shape.length; i++)
+			if (
+				this._shape[i] > 1 &&
+				other.shape[i] > 1 &&
+				this._shape[i] !== other.shape[i]
+			)
+				throw new Error(
+					`This tensor shape (${pretty1dArray(
+						this.shape
+					)}) must match input tensor shape (${pretty1dArray(
+						other.shape
+					)}) at non-singleton dimensions`
+				)
+		const shape = maxArrays(this._shape, other.shape)
+		const cells = Array(product(shape))
+		const thisTensor = equalArrays(this._shape, shape)
+			? this
+			: this.expand(shape)
+		const otherTensor = equalArrays(other.shape, shape)
+			? other
+			: other.expand(shape)
+		Tensor.forEachIndex(shape, (index, i) => {
+			cells[i] = thisTensor.valueAt(index) * otherTensor.valueAt(index)
 		})
-		return Tensor.withShapeAndCells(this._shape.slice(), cells)
+		return Tensor.withShapeAndCells(shape, cells)
 	}
 }
