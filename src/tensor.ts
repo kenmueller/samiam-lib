@@ -182,8 +182,9 @@ export default class Tensor {
 			fn(index, i)
 	}
 
-	valueAt = (index: readonly number[]) =>
-		this._cells[dotProd(index, this._stride)]
+	cellsIndex = (index: readonly number[]) => dotProd(index, this._stride)
+
+	valueAt = (index: readonly number[]) => this._cells[this.cellsIndex(index)]
 
 	multiply = (other: Tensor) => {
 		if (this._shape.length !== other.shape.length)
@@ -208,7 +209,7 @@ export default class Tensor {
 					)}) at non-singleton dimensions`
 				)
 		const shape = maxArrays(this._shape, other.shape)
-		const cells = Array(product(shape))
+		const cells = new Array(product(shape))
 		const thisTensor = equalArrays(this._shape, shape)
 			? this
 			: this.expand(shape)
@@ -219,5 +220,35 @@ export default class Tensor {
 			cells[i] = thisTensor.valueAt(index) * otherTensor.valueAt(index)
 		})
 		return Tensor.withShapeAndCells(shape, cells)
+	}
+
+	project = (dims: number[]) => {
+		if (dims.length > 0 && dims[0] < 0)
+			throw new Error('Negative dimensions not allowed')
+		if (dims.length > 0 && dims[dims.length - 1] >= this.shape.length)
+			throw new Error(
+				`Cannot project onto dimension ${
+					dims[dims.length - 1]
+				} as it's beyond the ${this.shape.length} dimensions of this tensor`
+			)
+		for (let i = 1; i < dims.length; i++)
+			if (dims[i - 1] >= dims[i])
+				throw new Error(
+					`Dimensions to project onto must be in order, dimension ${
+						dims[i - 1]
+					} must be less than its following dimension ${dims[i]}`
+				)
+		const projectedShape = dims.map(i => this._shape[i])
+		const projectedStride = Tensor.calcStride(projectedShape)
+		const projectedCells = new Array(product(projectedShape)).fill(0)
+		Tensor.forEachIndex(this._shape, index => {
+			projectedCells[
+				dotProd(
+					dims.map(i => index[i]),
+					projectedStride
+				)
+			] += this.valueAt(index)
+		})
+		return new Tensor(projectedShape, projectedStride, projectedCells)
 	}
 }

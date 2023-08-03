@@ -36,4 +36,13 @@ export default class Factor {
 		}
 		return new Factor(sortedNodes, thisTensor.multiply(otherTensor))
 	}
+
+	project = (nodes: Node[]) =>
+		this.projectIndices(nodes.map(node => this._nodes.indexOf(node)))
+
+	projectIndices = (indices: number[]) =>
+		new Factor(
+			indices.map(i => this._nodes[i]),
+			this._tensor.project(indices)
+		)
 }

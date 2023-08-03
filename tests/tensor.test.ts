@@ -129,3 +129,35 @@ test('multiply', () => {
 	expect(result.stride).toEqual([6, 2, 1])
 	expect(result.cells).toEqual([15, 65, 21, 85, 33, 95])
 })
+
+test('projection', () => {
+	expect(() => large.project([-2, 1, 2])).toThrow(
+		'Negative dimensions not allowed'
+	)
+	expect(() => large.project([0, 1, 6])).toThrow(
+		"Cannot project onto dimension 6 as it's beyond the 4 dimensions of this tensor"
+	)
+	expect(() => large.project([3, 1, 2])).toThrow(
+		'Dimensions to project onto must be in order, dimension 3 must be less than its following dimension 1'
+	)
+	const smallProjected0 = small.project([0])
+	expect(smallProjected0.shape).toEqual([2])
+	expect(smallProjected0.stride).toEqual([1])
+	expect(smallProjected0.cells).toEqual([3, 5])
+	const smallProjected1 = small.project([1])
+	expect(smallProjected1.shape).toEqual([1])
+	expect(smallProjected1.stride).toEqual([1])
+	expect(smallProjected1.cells).toEqual([8])
+	const mediumProjected1 = medium.project([1])
+	expect(mediumProjected1.shape).toEqual([1])
+	expect(mediumProjected1.stride).toEqual([1])
+	expect(mediumProjected1.cells).toEqual([72])
+	const mediumProjected02 = medium.project([0, 2])
+	expect(mediumProjected02.shape).toEqual([2, 3])
+	expect(mediumProjected02.stride).toEqual([3, 1])
+	expect(mediumProjected02.cells).toEqual([5, 7, 11, 13, 17, 19])
+	const largeProjected12 = large.project([1, 2])
+	expect(largeProjected12.shape).toEqual([2, 3])
+	expect(largeProjected12.stride).toEqual([3, 1])
+	expect(largeProjected12.cells).toEqual([108, 140, 172, 204, 236, 268])
+})
