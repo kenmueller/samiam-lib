@@ -16,6 +16,11 @@ export default class Factor {
 		return new Factor(sortedNodes, tensor.permute(sortedOrder))
 	}
 
+	static multiplyAll = (factors: Factor[]) =>
+		factors
+			.slice(1)
+			.reduce((product, factor) => product.multiply(factor), factors[0])
+
 	get nodes() {
 		return this._nodes
 	}
@@ -45,4 +50,6 @@ export default class Factor {
 			indices.map(i => this._nodes[i]),
 			this._tensor.project(indices)
 		)
+
+	sumOut = (node: Node) => this.project(this._nodes.filter(n => n !== node))
 }

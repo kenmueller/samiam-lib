@@ -1,4 +1,5 @@
 import Evidence, { NO_EVIDENCE } from './evidence'
+import Factor from './factor'
 import InteractionGraph from './interaction-graph'
 import MapResult from './map-result'
 import Node from './node'
@@ -12,18 +13,27 @@ export default class BeliefNetwork<NodeLike extends Node = Node> {
 		// this.nodeNames.add(node.name)
 	}
 
-	probability = (evidence: Evidence) => {
-		const { observations, interventions } = evidence
+	probability = ({ observations, interventions }: Evidence) => {
 		const { minDegreeOrder } = new InteractionGraph(this.nodes)
+		let factors = this.nodes.map(({ factor }) => factor)
 
 		for (let i = 0; i < minDegreeOrder.length; i++) {
 			const node = minDegreeOrder[i]
-			const nodeEvidence = observations.get(node) ?? interventions.get(node)
-			if (nodeEvidence !== undefined) {
-				const { value } = nodeEvidence
-				node.setEvidence(value)
-			}
+
+			const factorsWithNode = factors.filter(factor =>
+				factor.nodes.includes(node)
+			)
+
+			const productFactor = Factor.multiplyAll(factorsWithNode)
+			const sumOutFactor = productFactor.sumOut(node)
+
+			factors = [
+				...factors.filter(factor => !factorsWithNode.includes(factor)),
+				sumOutFactor
+			]
 		}
+
+		return Factor.multiplyAll(factors)
 	}
 
 	priorMarginal = (node: Node) => this.posteriorMarginal(NO_EVIDENCE, node)
