@@ -7,9 +7,10 @@ test('minDegreeOrder 1 node', () => {
 
 	const a = Node.withUniformDistribution('a', network, ['yes', 'no'])
 
-	expect([[a]]).toContainEqual(
-		new InteractionGraph(network.nodes).minDegreeOrder
+	expect(['a']).toEqual(
+		new InteractionGraph(network.nodes).minDegreeOrder.map(n => n.name)
 	)
+	// console.log(new InteractionGraph(network.nodes).minDegreeOrder)
 })
 
 test('minDegreeOrder 2 nodes', () => {
@@ -20,10 +21,9 @@ test('minDegreeOrder 2 nodes', () => {
 
 	b.addParent(a)
 
-	expect([
-		[a, b],
-		[b, a]
-	]).toContainEqual(new InteractionGraph(network.nodes).minDegreeOrder)
+	expect(['a', 'b']).toEqual(
+		new InteractionGraph(network.nodes).minDegreeOrder.map(n => n.name)
+	)
 })
 
 test('minDegreeOrder 3 nodes', () => {
@@ -34,12 +34,29 @@ test('minDegreeOrder 3 nodes', () => {
 	const c = Node.withUniformDistribution('c', network, ['yes', 'no'])
 
 	b.addParent(a)
-	c.addParent(b)
+	c.addParent(a)
 
-	expect([
-		[a, b, c],
-		[a, c, b],
-		[c, a, b],
-		[c, b, a]
-	]).toContainEqual(new InteractionGraph(network.nodes).minDegreeOrder)
+	expect(['b', 'a', 'c']).toEqual(
+		new InteractionGraph(network.nodes).minDegreeOrder.map(n => n.name)
+	)
+})
+
+test('min degree order §6.6 example', () => {
+	const network = new BeliefNetwork()
+
+	const a = Node.withUniformDistribution('A', network, ['yes', 'no'])
+	const b = Node.withUniformDistribution('B', network, ['yes', 'no'])
+	const c = Node.withUniformDistribution('C', network, ['yes', 'no'])
+	const d = Node.withUniformDistribution('D', network, ['yes', 'no'])
+	const e = Node.withUniformDistribution('E', network, ['yes', 'no'])
+
+	b.addParent(a)
+	c.addParent(a)
+	d.addParent(b)
+	d.addParent(c)
+	e.addParent(c)
+
+	expect(['E', 'A', 'B', 'C', 'D']).toEqual(
+		new InteractionGraph(network.nodes).minDegreeOrder.map(n => n.name)
+	)
 })
