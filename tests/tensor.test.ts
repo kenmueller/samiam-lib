@@ -1,12 +1,13 @@
 import Tensor from '../src/tensor'
 
+const zeroDim = Tensor.withShapeAndCells([], [42]) // tensor(42)
 const small = Tensor.withShapeAndCells([2, 1], [3, 5]) // tensor([[3],[5]])
 const medium = Tensor.withShapeAndCells([2, 1, 3], [5, 7, 11, 13, 17, 19]) // tensor([[[5,7,11]],[[13,17,19]]])
 const large = Tensor.withShapeAndCells([2, 2, 3, 4], [...Array(48).keys()]) // tensor([[[[0,1,2,3],[4,5,6,7],[8,9,10,11]],[[12,13,14,15],[16,17,18,19],[20,21,22,23]]],[[[24,25,26,27],[28,29,30,31],[32,33,34,35]],[[36,37,38,39],[40,41,42,43],[44,45,46,47]]]])
 
 test('invalid initialization', () => {
 	expect(() => Tensor.withShapeAndCells([], [])).toThrow(
-		'Shape must not be empty'
+		'1 cells necessary instead of 0'
 	)
 	expect(() => Tensor.withShapeAndCells([2], [])).toThrow(
 		'2 cells necessary instead of 0'
@@ -19,11 +20,17 @@ test('invalid initialization', () => {
 	).toThrow('30 cells necessary instead of 48')
 })
 test('correct strides', () => {
+	expect(zeroDim.stride).toEqual([1])
 	expect(small.stride).toEqual([1, 1])
 	expect(medium.stride).toEqual([3, 3, 1])
 	expect(large.stride).toEqual([24, 12, 4, 1])
 })
 test('unsqueeze', () => {
+	expect(() => zeroDim.unsqueeze(1)).toThrow(
+		'Can only insert a dimension between 0 and 0'
+	)
+	expect(zeroDim.unsqueeze(0).shape).toEqual([1])
+	expect(zeroDim.unsqueeze(0).stride).toEqual([1])
 	expect(small.unsqueeze(0).shape).toEqual([1, 2, 1])
 	expect(small.unsqueeze(0).stride).toEqual([2, 1, 1])
 	expect(small.unsqueeze(1).shape).toEqual([2, 1, 1])

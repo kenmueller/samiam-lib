@@ -42,7 +42,7 @@ export default class Tensor {
 	) {}
 
 	static validate = (shape: number[], cells: number[]) => {
-		if (shape.length === 0) throw new Error('Shape must not be empty')
+		// if (shape.length === 0) throw new Error('Shape must not be empty')
 		const requiredCells = shape.reduce((cells, dim) => cells * dim, 1)
 		if (requiredCells !== cells.length)
 			throw new Error(
@@ -102,15 +102,16 @@ export default class Tensor {
 				`Can only insert a dimension between 0 and ${this._shape.length}`
 			)
 		const newShape = this._shape.toSpliced(dimension, 0, 1)
-		const newStride = this._stride.toSpliced(
-			dimension,
-			0,
-			dimension === 0
-				? this._shape.length === 0
-					? 1
-					: this._stride[0] * this._shape[0]
-				: this._stride[dimension - 1]
-		)
+		const newStride =
+			this._shape.length === 0
+				? [1]
+				: this._stride.toSpliced(
+						dimension,
+						0,
+						dimension === 0
+							? this._stride[0] * this._shape[0]
+							: this._stride[dimension - 1]
+				  )
 		return new Tensor(newShape, newStride, this._cells)
 	}
 
