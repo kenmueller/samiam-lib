@@ -1,7 +1,7 @@
 {
 	"name": "samiam",
 	"description": "Bayesian Network modeling, reasoning, and inference engine",
-	"version": "0.0.22",
+	"version": "0.0.23",
 	"type": "module",
 	"files": [
 		"lib",
