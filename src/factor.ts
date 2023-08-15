@@ -27,6 +27,11 @@ export default class Factor {
 	get tensor() {
 		return this._tensor
 	}
+	get value() {
+		if (this._nodes.length > 0)
+			throw new Error('Must be 0-dimensional factor to get value')
+		return this._tensor.cells[0]
+	}
 
 	multiply = (other: Factor) => {
 		const nodes = Array.from(new Set(this.nodes.concat(other.nodes)))

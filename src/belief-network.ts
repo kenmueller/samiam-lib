@@ -33,7 +33,7 @@ export default class BeliefNetwork<NodeLike extends Node = Node> {
 			]
 		}
 
-		return Factor.multiplyAll(factors)
+		return Factor.multiplyAll(factors).value
 	}
 
 	priorMarginal = (node: Node) => this.posteriorMarginal(NO_EVIDENCE, node)
