@@ -14,7 +14,13 @@ export default class BeliefNetwork<NodeLike extends Node = Node> {
 	}
 
 	probability = ({ observations, interventions }: Evidence) => {
-		const { minDegreeOrder } = new InteractionGraph(this.nodes)
+		const nodesWithoutEvidence = this.nodes.filter(
+			node =>
+				!observations.some(observation => observation.node === node) &&
+				!interventions.some(intervention => intervention.node === node)
+		)
+
+		const { minDegreeOrder } = new InteractionGraph(nodesWithoutEvidence)
 		let factors = this.nodes.map(({ factor }) => factor)
 
 		for (let i = 0; i < minDegreeOrder.length; i++) {
@@ -33,7 +39,15 @@ export default class BeliefNetwork<NodeLike extends Node = Node> {
 			]
 		}
 
-		return Factor.multiplyAll(factors).value
+		const productFactor = Factor.multiplyAll(factors)
+
+		const sortedEvidence = [...observations, ...interventions].toSorted(
+			(a, b) => Node.comparator(a.node, b.node)
+		)
+
+		return productFactor.tensor.valueAt(
+			sortedEvidence.map(({ value }) => value)
+		)
 	}
 
 	priorMarginal = (node: Node) => this.posteriorMarginal(NO_EVIDENCE, node)
