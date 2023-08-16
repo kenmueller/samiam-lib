@@ -57,4 +57,6 @@ export default class Factor {
 		)
 
 	sumOut = (node: Node) => this.project(this._nodes.filter(n => n !== node))
+
+	withoutNodes = (nodesToRemove: Node[]) => {}
 }

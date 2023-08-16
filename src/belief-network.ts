@@ -26,8 +26,15 @@ export default class BeliefNetwork<NodeLike extends Node = Node> {
 		for (let i = 0; i < minDegreeOrder.length; i++) {
 			const node = minDegreeOrder[i]
 
+			const isIntervened = interventions.some(
+				intervention => intervention.node === node
+			)
+
 			const factorsWithNode = factors.filter(factor =>
-				factor.nodes.includes(node)
+				(isIntervened
+					? factor.nodes.filter(otherNode => !node.parents.includes(otherNode))
+					: factor.nodes
+				).includes(node)
 			)
 
 			const productFactor = Factor.multiplyAll(factorsWithNode)
