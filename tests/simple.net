@@ -1,0 +1,60 @@
+net
+{
+	node_size = (130.0 55.0);
+	propagationenginegenerator1791944048146838126L = "edu.ucla.belief.approx.BeliefPropagationSettings@4876fe9f";
+	recoveryenginegenerator6944530267470113528l = "edu.ucla.util.SettingsImpl@76a6a27a";
+}
+
+node Z
+{
+	states = ("yes" "no" );
+	position = (131 -125);
+	isdecisionvariable = "false";
+	diagnosistype = "AUXILIARY";
+	DSLxSUBMODEL = "Root Submodel";
+	ismapvariable = "false";
+	ID = "variable0";
+	label = "Z";
+	DSLxEXTRA_DEFINITIONxDIAGNOSIS_TYPE = "AUXILIARY";
+	excludepolicy = "include whole CPT";
+}
+node X
+{
+	states = ("yes" "no" );
+	position = (34 -231);
+	isdecisionvariable = "false";
+	diagnosistype = "AUXILIARY";
+	ismapvariable = "false";
+	ID = "variable0";
+	label = "X";
+	DSLxEXTRA_DEFINITIONxDIAGNOSIS_TYPE = "AUXILIARY";
+	excludepolicy = "include whole CPT";
+}
+node Y
+{
+	states = ("yes" "no" );
+	position = (247 -231);
+	isdecisionvariable = "false";
+	diagnosistype = "AUXILIARY";
+	ismapvariable = "false";
+	ID = "variable0";
+	label = "Y";
+	DSLxEXTRA_DEFINITIONxDIAGNOSIS_TYPE = "AUXILIARY";
+	excludepolicy = "include whole CPT";
+}
+potential ( Z | )
+{
+	data = (	0.6	0.4	);
+}
+potential ( X | Z )
+{
+	data = ((	0.2	0.8	)
+		(	0.3	0.7	));
+}
+potential ( Y | Z X )
+{
+	data = (((	0.1	0.9	)
+		(	0.4	0.6	))
+		((	0.2	0.8	)
+		(	0.7	0.3	)));
+}

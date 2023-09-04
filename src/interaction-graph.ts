@@ -1,15 +1,27 @@
 import Node from './node'
 
-export default class InteractionGraph<NodeLike extends Node = Node> {
-	adjacencyList: Map<Node, Set<Node>>
+export default class InteractionGraph {
+	//<NodeLike extends Node = Node> {
+	/** Each node is mapped to a set of adjacent nodes and query node indicator */
+	adjacencyList: Map<Node, [Set<Node>, boolean]>
 
-	constructor(public nodes: NodeLike[]) {
-		this.adjacencyList = new Map<Node, Set<Node>>()
-		for (const node of nodes)
-			this.adjacencyList.set(node, new Set(node.parents))
-		for (const node of nodes)
-			for (const parent of node.parents)
-				this.adjacencyList.get(parent)!.add(node)
+	constructor(public queryNodes: Node[], public nonQueryNodes: Node[]) {
+		// console.log(
+		// 	'igraph query nodes',
+		// 	queryNodes.map(n => n.name),
+		// 	'non query nodes',
+		// 	nonQueryNodes.map(n => n.name)
+		// )
+		this.adjacencyList = new Map<Node, [Set<Node>, boolean]>()
+		for (const node of queryNodes)
+			this.adjacencyList.set(node, [new Set(node.parents), true])
+		for (const node of nonQueryNodes)
+			this.adjacencyList.set(node, [new Set(node.parents), false])
+		for (const node of queryNodes.concat(nonQueryNodes))
+			for (const parent of node.parents) {
+				// console.log('inner loop', node.name, parent.name)
+				this.adjacencyList.get(parent)![0].add(node)
+			}
 	}
 
 	// static minDegreeNode = <NodeLike extends Node = Node>(nodes: NodeLike[]) =>
@@ -30,15 +42,15 @@ export default class InteractionGraph<NodeLike extends Node = Node> {
 		// 	...(node.children as NodeLike[])
 		// ])
 
-		const pi = new Array<NodeLike>(this.nodes.length)
-		const nodes = new Set(this.nodes)
+		const pi = new Array<Node>(this.nonQueryNodes.length)
+		const nodes = new Set(this.nonQueryNodes)
 
 		for (let i = 0; i < pi.length; i++) {
 			// find node with smallest number of neighbors
 			let minNeighborsNode
 			let minNeighborsNodeNeighbors
 			for (const node of nodes) {
-				const neighbors = this.adjacencyList.get(node)!
+				const neighbors = this.adjacencyList.get(node)![0]
 				if (
 					minNeighborsNode === undefined ||
 					minNeighborsNodeNeighbors!.size > neighbors.size
@@ -67,10 +79,10 @@ export default class InteractionGraph<NodeLike extends Node = Node> {
 			// also delete variable pi[i] from graph
 			const neighborsArray = Array.from(minNeighborsNodeNeighbors)
 			for (let i = 0; i < neighborsArray.length; i++) {
-				const neighborNeighbors = this.adjacencyList.get(neighborsArray[i])!
+				const neighborNeighbors = this.adjacencyList.get(neighborsArray[i])![0]
 				for (let j = i + 1; j < neighborsArray.length; j++) {
 					neighborNeighbors.add(neighborsArray[j])
-					this.adjacencyList.get(neighborsArray[j])!.add(neighborsArray[i])
+					this.adjacencyList.get(neighborsArray[j])![0].add(neighborsArray[i])
 				}
 				neighborNeighbors.delete(minNeighborsNode)
 			}

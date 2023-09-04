@@ -8,7 +8,7 @@ test('min degree order 1 node', () => {
 	const a = Node.withUniformDistribution('a', network, ['yes', 'no'])
 
 	expect(['a']).toEqual(
-		new InteractionGraph(network.nodes).minDegreeOrder.map(n => n.name)
+		new InteractionGraph([], network.nodes).minDegreeOrder.map(n => n.name)
 	)
 	// console.log(new InteractionGraph(network.nodes).minDegreeOrder)
 })
@@ -22,7 +22,7 @@ test('min degree order 2 nodes', () => {
 	b.addParent(a)
 
 	expect(['a', 'b']).toEqual(
-		new InteractionGraph(network.nodes).minDegreeOrder.map(n => n.name)
+		new InteractionGraph([], network.nodes).minDegreeOrder.map(n => n.name)
 	)
 })
 
@@ -33,7 +33,7 @@ test('min degree order 2 independent nodes', () => {
 	const b = Node.withUniformDistribution('b', network, ['yes', 'no'])
 
 	expect(['a', 'b']).toEqual(
-		new InteractionGraph(network.nodes).minDegreeOrder.map(n => n.name)
+		new InteractionGraph([], network.nodes).minDegreeOrder.map(n => n.name)
 	)
 })
 
@@ -48,7 +48,7 @@ test('min degree order 3 nodes', () => {
 	c.addParent(a)
 
 	expect(['b', 'a', 'c']).toEqual(
-		new InteractionGraph(network.nodes).minDegreeOrder.map(n => n.name)
+		new InteractionGraph([], network.nodes).minDegreeOrder.map(n => n.name)
 	)
 })
 
@@ -68,6 +68,6 @@ test('min degree order §6.6 example', () => {
 	e.addParent(c)
 
 	expect(['E', 'A', 'B', 'C', 'D']).toEqual(
-		new InteractionGraph(network.nodes).minDegreeOrder.map(n => n.name)
+		new InteractionGraph([], network.nodes).minDegreeOrder.map(n => n.name)
 	)
 })

@@ -14,13 +14,20 @@ export default class BeliefNetwork<NodeLike extends Node = Node> {
 	}
 
 	probability = ({ observations, interventions }: Evidence) => {
+		const nodesWithEvidence = observations
+			.map(obs => obs.node)
+			.concat(interventions.map(int => int.node))
 		const nodesWithoutEvidence = this.nodes.filter(
 			node =>
-				!observations.some(observation => observation.node === node) &&
-				!interventions.some(intervention => intervention.node === node)
+				// !observations.some(observation => observation.node === node) &&
+				// !interventions.some(intervention => intervention.node === node)
+				!nodesWithEvidence.includes(node)
 		)
 
-		const { minDegreeOrder } = new InteractionGraph(nodesWithoutEvidence)
+		const { minDegreeOrder } = new InteractionGraph(
+			nodesWithEvidence,
+			nodesWithoutEvidence
+		)
 		let factors = this.nodes.map(({ factor }) => factor)
 
 		for (let i = 0; i < minDegreeOrder.length; i++) {
