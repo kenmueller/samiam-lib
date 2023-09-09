@@ -135,6 +135,9 @@ export default class Node {
 		// 	throw new Error(`Another node already has name ${name}`)
 	}
 
+	intervenedFactor = (valueIndex: number) =>
+		Factor.fromIntervenedNode(this, valueIndex)
+
 	get factor() {
 		return this._factor
 	}

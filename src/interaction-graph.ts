@@ -5,7 +5,11 @@ export default class InteractionGraph {
 	/** Each node is mapped to a set of adjacent nodes and query node indicator */
 	adjacencyList: Map<Node, [Set<Node>, boolean]>
 
-	constructor(public queryNodes: Node[], public nonQueryNodes: Node[]) {
+	constructor(
+		public queryNodes: Node[],
+		public intervenedNodes: Node[],
+		public nonEvidenceNodes: Node[]
+	) {
 		// console.log(
 		// 	'igraph query nodes',
 		// 	queryNodes.map(n => n.name),
@@ -15,9 +19,11 @@ export default class InteractionGraph {
 		this.adjacencyList = new Map<Node, [Set<Node>, boolean]>()
 		for (const node of queryNodes)
 			this.adjacencyList.set(node, [new Set(node.parents), true])
-		for (const node of nonQueryNodes)
+		for (const node of intervenedNodes)
+			this.adjacencyList.set(node, [new Set(), false])
+		for (const node of nonEvidenceNodes)
 			this.adjacencyList.set(node, [new Set(node.parents), false])
-		for (const node of queryNodes.concat(nonQueryNodes))
+		for (const node of queryNodes.concat(nonEvidenceNodes))
 			for (const parent of node.parents) {
 				// console.log('inner loop', node.name, parent.name)
 				this.adjacencyList.get(parent)![0].add(node)
@@ -42,8 +48,8 @@ export default class InteractionGraph {
 		// 	...(node.children as NodeLike[])
 		// ])
 
-		const pi = new Array<Node>(this.nonQueryNodes.length)
-		const nodes = new Set(this.nonQueryNodes)
+		const nodes = new Set(this.nonEvidenceNodes.concat(this.intervenedNodes))
+		const pi = new Array<Node>(nodes.size)
 
 		for (let i = 0; i < pi.length; i++) {
 			// find node with smallest number of neighbors

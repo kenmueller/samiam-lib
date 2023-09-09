@@ -14,35 +14,49 @@ export default class BeliefNetwork<NodeLike extends Node = Node> {
 	}
 
 	probability = ({ observations, interventions }: Evidence) => {
-		const nodesWithEvidence = observations
-			.map(obs => obs.node)
-			.concat(interventions.map(int => int.node))
-		const nodesWithoutEvidence = this.nodes.filter(
-			node =>
-				// !observations.some(observation => observation.node === node) &&
-				// !interventions.some(intervention => intervention.node === node)
-				!nodesWithEvidence.includes(node)
+		// const nodesWithEvidence = observations
+		// 	.map(obs => obs.node)
+		// 	.concat(interventions.map(int => int.node))
+		// const nodesWithoutEvidence = this.nodes.filter(
+		// 	node => !nodesWithEvidence.includes(node)
+		// )
+		const observedNodes = observations.map(obs => obs.node)
+		const intervenedNodes = interventions.map(int => int.node)
+		const nonEvidenceNodes = this.nodes.filter(
+			node => !observedNodes.includes(node) && !intervenedNodes.includes(node)
 		)
 
 		const { minDegreeOrder } = new InteractionGraph(
-			nodesWithEvidence,
-			nodesWithoutEvidence
+			observedNodes,
+			intervenedNodes,
+			nonEvidenceNodes
+			// nodesWithEvidence,
+			// nodesWithoutEvidence
 		)
-		let factors = this.nodes.map(({ factor }) => factor)
+		// let factors = this.nodes.map(({ factor }) => factor)
+		let factors = this.nodes.map(node => {
+			const intervention = interventions.find(int => int.node === node)
+			return intervention === undefined
+				? node.factor
+				: node.intervenedFactor(intervention.value)
+		})
 
 		for (let i = 0; i < minDegreeOrder.length; i++) {
 			const node = minDegreeOrder[i]
 
-			const isIntervened = interventions.some(
-				intervention => intervention.node === node
-			)
+			// const isIntervened = interventions.some(
+			// 	intervention => intervention.node === node
+			// )
 
 			const factorsWithNode = factors.filter(factor =>
-				(isIntervened
-					? factor.nodes.filter(otherNode => !node.parents.includes(otherNode))
-					: factor.nodes
-				).includes(node)
+				factor.nodes.includes(node)
 			)
+			// const factorsWithNode = factors.filter(factor =>
+			// 	(isIntervened
+			// 		? factor.nodes.filter(otherNode => !node.parents.includes(otherNode))
+			// 		: factor.nodes
+			// 	).includes(node)
+			// )
 
 			const productFactor = Factor.multiplyAll(factorsWithNode)
 			const sumOutFactor = productFactor.sumOut(node)
@@ -55,8 +69,8 @@ export default class BeliefNetwork<NodeLike extends Node = Node> {
 
 		const productFactor = Factor.multiplyAll(factors)
 
-		const sortedEvidence = [...observations, ...interventions].toSorted(
-			(a, b) => Node.comparator(a.node, b.node)
+		const sortedEvidence = observations.toSorted((a, b) =>
+			Node.comparator(a.node, b.node)
 		)
 
 		return productFactor.tensor.valueAt(

@@ -16,6 +16,14 @@ export default class Factor {
 		return new Factor(sortedNodes, tensor.permute(sortedOrder))
 	}
 
+	static fromIntervenedNode = (node: Node, valueIndex: number) => {
+		const shape = [node.values.length]
+		const cells = new Array(node.values.length).fill(0)
+		cells[valueIndex] = 1
+		const tensor = Tensor.withShapeAndCells(shape, cells)
+		return new Factor([node], tensor)
+	}
+
 	static multiplyAll = (factors: Factor[]) =>
 		factors
 			.slice(1)

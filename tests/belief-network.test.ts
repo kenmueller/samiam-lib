@@ -174,3 +174,45 @@ test('observational probability of evidence', () => {
 		})
 	).toBe(0.096)
 })
+
+test('interventional probability of evidence', () => {
+	expect(
+		networkSimple.probability({
+			observations: [{ node: nodeY, value: 0 }],
+			interventions: [{ node: nodeX, value: 0 }]
+		})
+	).toBe(0.14)
+	expect(
+		networkSimple.probability({
+			observations: [{ node: nodeY, value: 0 }],
+			interventions: [{ node: nodeX, value: 1 }]
+		})
+	).toBe(0.52)
+	expect(
+		networkSimple.probability({
+			observations: [
+				{ node: nodeY, value: 1 },
+				{ node: nodeZ, value: 1 }
+			],
+			interventions: [{ node: nodeX, value: 0 }]
+		})
+	).toBeCloseTo(0.32)
+	expect(
+		networkSimple.probability({
+			observations: [
+				{ node: nodeX, value: 0 },
+				{ node: nodeY, value: 1 }
+			],
+			interventions: [{ node: nodeZ, value: 0 }]
+		})
+	).toBeCloseTo(0.18)
+	expect(
+		networkSimple.probability({
+			observations: [{ node: nodeY, value: 1 }],
+			interventions: [
+				{ node: nodeX, value: 0 },
+				{ node: nodeZ, value: 0 }
+			]
+		})
+	).toBe(0.9)
+})
