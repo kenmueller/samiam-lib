@@ -13,50 +13,27 @@ export default class BeliefNetwork<NodeLike extends Node = Node> {
 		// this.nodeNames.add(node.name)
 	}
 
-	probability = ({ observations, interventions }: Evidence) => {
-		// const nodesWithEvidence = observations
-		// 	.map(obs => obs.node)
-		// 	.concat(interventions.map(int => int.node))
-		// const nodesWithoutEvidence = this.nodes.filter(
-		// 	node => !nodesWithEvidence.includes(node)
-		// )
-		const observedNodes = observations.map(obs => obs.node)
-		const intervenedNodes = interventions.map(int => int.node)
-		const nonEvidenceNodes = this.nodes.filter(
-			node => !observedNodes.includes(node) && !intervenedNodes.includes(node)
-		)
-
-		const { minDegreeOrder } = new InteractionGraph(
-			observedNodes,
-			intervenedNodes,
-			nonEvidenceNodes
-			// nodesWithEvidence,
-			// nodesWithoutEvidence
-		)
-		// let factors = this.nodes.map(({ factor }) => factor)
+	/** returns joint marginal P(queryNodes, evidence) */
+	variableElimination2 = (
+		// queryNodes: Node[],
+		{ observations, interventions }: Evidence,
+		eliminationOrder: Node[]
+	) => {
+		// intervened factors have no parents and all probability mass on a single value
 		let factors = this.nodes.map(node => {
 			const intervention = interventions.find(int => int.node === node)
 			return intervention === undefined
-				? node.factor
+				? // zero out rows of factors incompatible with evidence
+				  node.factor.reduction(observations)
 				: node.intervenedFactor(intervention.value)
 		})
 
-		for (let i = 0; i < minDegreeOrder.length; i++) {
-			const node = minDegreeOrder[i]
-
-			// const isIntervened = interventions.some(
-			// 	intervention => intervention.node === node
-			// )
+		for (let i = 0; i < eliminationOrder.length; i++) {
+			const node = eliminationOrder[i]
 
 			const factorsWithNode = factors.filter(factor =>
 				factor.nodes.includes(node)
 			)
-			// const factorsWithNode = factors.filter(factor =>
-			// 	(isIntervened
-			// 		? factor.nodes.filter(otherNode => !node.parents.includes(otherNode))
-			// 		: factor.nodes
-			// 	).includes(node)
-			// )
 
 			const productFactor = Factor.multiplyAll(factorsWithNode)
 			const sumOutFactor = productFactor.sumOut(node)
@@ -67,22 +44,76 @@ export default class BeliefNetwork<NodeLike extends Node = Node> {
 			]
 		}
 
-		const productFactor = Factor.multiplyAll(factors)
+		return Factor.multiplyAll(factors)
+	}
 
-		const sortedEvidence = observations.toSorted((a, b) =>
-			Node.comparator(a.node, b.node)
+	probability = (evidence: Evidence) => {
+		// const observedNodes = observations.map(obs => obs.node)
+		const intervenedNodes = evidence.interventions.map(int => int.node)
+		const nonIntervenedNodes = this.nodes.filter(
+			node => !intervenedNodes.includes(node)
 		)
 
-		return productFactor.tensor.valueAt(
-			sortedEvidence.map(({ value }) => value)
-		)
+		// const { minDegreeOrder } = new InteractionGraph(
+		// 	observedNodes,
+		// 	intervenedNodes,
+		// 	nonEvidenceNodes
+		// )
+
+		const iGraph = new InteractionGraph([], intervenedNodes, nonIntervenedNodes)
+		return this.variableElimination2(evidence, iGraph.minDegreeOrder).value
+
+		// let factors = this.nodes.map(node => {
+		// 	const intervention = interventions.find(int => int.node === node)
+		// 	return intervention === undefined
+		// 		? node.factor
+		// 		: node.intervenedFactor(intervention.value)
+		// })
+
+		// for (let i = 0; i < minDegreeOrder.length; i++) {
+		// 	const node = minDegreeOrder[i]
+		// 	const factorsWithNode = factors.filter(factor =>
+		// 		factor.nodes.includes(node)
+		// 	)
+
+		// 	const productFactor = Factor.multiplyAll(factorsWithNode)
+		// 	const sumOutFactor = productFactor.sumOut(node)
+
+		// 	factors = [
+		// 		...factors.filter(factor => !factorsWithNode.includes(factor)),
+		// 		sumOutFactor
+		// 	]
+		// }
+
+		// const productFactor = Factor.multiplyAll(factors)
+
+		// const sortedEvidence = observations.toSorted((a, b) =>
+		// 	Node.comparator(a.node, b.node)
+		// )
+
+		// return productFactor.tensor.valueAt(
+		// 	sortedEvidence.map(({ value }) => value)
+		// )
 	}
 
 	priorMarginal = (node: Node) => this.posteriorMarginal(NO_EVIDENCE, node)
 
-	posteriorMarginal = (evidence: Evidence, node: Node) => {
-		return node.values.map(value => Math.random())
+	jointMarginal = (evidence: Evidence, posteriorNode: Node) => {
+		const intervenedNodes = evidence.interventions.map(int => int.node)
+		const nonQueryIntervenedNodes = this.nodes.filter(
+			node => node !== posteriorNode && !intervenedNodes.includes(node)
+		)
+
+		const iGraph = new InteractionGraph(
+			[posteriorNode],
+			intervenedNodes,
+			nonQueryIntervenedNodes
+		)
+		return this.variableElimination2(evidence, iGraph.minDegreeOrder)
 	}
+
+	posteriorMarginal = (evidence: Evidence, posteriorNode: Node) =>
+		this.jointMarginal(evidence, posteriorNode).normalized
 
 	/** returns P(mpe, e_obs | e_int), P(mpe | e_obs, e_int), list of nodes and value indices */
 	mpe = (evidence: Evidence): MapResult => {

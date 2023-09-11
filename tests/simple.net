@@ -1,8 +1,8 @@
 net
 {
 	node_size = (130.0 55.0);
-	propagationenginegenerator1791944048146838126L = "edu.ucla.belief.approx.BeliefPropagationSettings@4876fe9f";
-	recoveryenginegenerator6944530267470113528l = "edu.ucla.util.SettingsImpl@76a6a27a";
+	propagationenginegenerator1791944048146838126L = "edu.ucla.belief.approx.BeliefPropagationSettings@27f219b2";
+	recoveryenginegenerator6944530267470113528l = "edu.ucla.util.SettingsImpl@4e352bbe";
 }
 
 node Z
@@ -18,18 +18,6 @@ node Z
 	DSLxEXTRA_DEFINITIONxDIAGNOSIS_TYPE = "AUXILIARY";
 	excludepolicy = "include whole CPT";
 }
-node X
-{
-	states = ("yes" "no" );
-	position = (34 -231);
-	isdecisionvariable = "false";
-	diagnosistype = "AUXILIARY";
-	ismapvariable = "false";
-	ID = "variable0";
-	label = "X";
-	DSLxEXTRA_DEFINITIONxDIAGNOSIS_TYPE = "AUXILIARY";
-	excludepolicy = "include whole CPT";
-}
 node Y
 {
 	states = ("yes" "no" );
@@ -42,19 +30,31 @@ node Y
 	DSLxEXTRA_DEFINITIONxDIAGNOSIS_TYPE = "AUXILIARY";
 	excludepolicy = "include whole CPT";
 }
+node X
+{
+	states = ("yes" "no" );
+	position = (34 -231);
+	isdecisionvariable = "false";
+	diagnosistype = "AUXILIARY";
+	ismapvariable = "false";
+	ID = "variable0";
+	label = "X";
+	DSLxEXTRA_DEFINITIONxDIAGNOSIS_TYPE = "AUXILIARY";
+	excludepolicy = "include whole CPT";
+}
 potential ( Z | )
 {
 	data = (	0.6	0.4	);
+}
+potential ( Y | Z X )
+{
+	data = (((	0.1	0.9	)
+		(	0.2	0.8	))
+		((	0.4	0.6	)
+		(	0.7	0.3	)));
 }
 potential ( X | Z )
 {
 	data = ((	0.2	0.8	)
 		(	0.3	0.7	));
-}
-potential ( Y | Z X )
-{
-	data = (((	0.1	0.9	)
-		(	0.4	0.6	))
-		((	0.2	0.8	)
-		(	0.7	0.3	)));
 }

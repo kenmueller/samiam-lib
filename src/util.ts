@@ -56,6 +56,9 @@ export const subtractArrays = (a: number[], b: number[]) =>
 export const maxArrays = (a: readonly number[], b: readonly number[]) =>
 	a.map((x, i) => Math.max(x, b[i]))
 
+export const sum = (a: readonly number[]) =>
+	a.reduce((total, x) => total + x, 0)
+
 export const product = (a: readonly number[]) =>
 	a.reduce((prod, x) => prod * x, 1)
 

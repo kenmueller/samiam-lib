@@ -1,6 +1,7 @@
 import {
 	equalArrays,
 	maxArrays,
+	sum,
 	product,
 	pretty1dArray,
 	sequence,
@@ -55,7 +56,24 @@ export default class Tensor {
 		return new Tensor(shape, this.calcStride(shape), cells)
 	}
 
-	// static withMultiDimArray = (cells: )
+	static incompatible = (
+		observationalIndices: number[],
+		index: readonly number[]
+	) =>
+		observationalIndices.some(
+			(obsIndex, i) => obsIndex !== -1 && obsIndex !== index[i]
+		)
+
+	reduction = (observationalIndices: number[]) => {
+		const newShape = this._shape.slice()
+		const newStride = this._stride.slice()
+		const newCells = this._cells.slice()
+		Tensor.forEachIndex(this._shape, index => {
+			if (Tensor.incompatible(observationalIndices, index))
+				newCells[Tensor.cellsIndex(this._stride, index)] = 0
+		})
+		return new Tensor(newShape, newStride, newCells)
+	}
 
 	static calcStride = (shape: number[]) =>
 		shape
@@ -72,6 +90,23 @@ export default class Tensor {
 
 	get cells() {
 		return Object.freeze(this._cells)
+	}
+
+	get clone() {
+		return new Tensor(
+			this._shape.slice(),
+			this._stride.slice(),
+			this._cells.slice()
+		)
+	}
+
+	get normalized() {
+		const normalizer = sum(this._cells)
+		return new Tensor(
+			this._shape.slice(),
+			this._stride.slice(),
+			this._cells.map(cell => cell / normalizer)
+		)
 	}
 
 	toString() {
@@ -183,9 +218,14 @@ export default class Tensor {
 			fn(index, i)
 	}
 
-	cellsIndex = (index: readonly number[]) => dotProd(index, this._stride)
+	static cellsIndex = (stride: number[], index: readonly number[]) =>
+		dotProd(index, stride)
 
-	valueAt = (index: readonly number[]) => this._cells[this.cellsIndex(index)]
+	valueAt = (index: readonly number[]) =>
+		this._cells[Tensor.cellsIndex(this._stride, index)]
+	setValueAt = (index: readonly number[], value: number) => {
+		this._cells[Tensor.cellsIndex(this._stride, index)] = value
+	}
 
 	multiply = (other: Tensor) => {
 		if (this._shape.length !== other.shape.length)

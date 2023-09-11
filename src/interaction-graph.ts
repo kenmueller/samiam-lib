@@ -8,7 +8,7 @@ export default class InteractionGraph {
 	constructor(
 		public queryNodes: Node[],
 		public intervenedNodes: Node[],
-		public nonEvidenceNodes: Node[]
+		public nonQueryIntervenedNodes: Node[]
 	) {
 		// console.log(
 		// 	'igraph query nodes',
@@ -21,9 +21,9 @@ export default class InteractionGraph {
 			this.adjacencyList.set(node, [new Set(node.parents), true])
 		for (const node of intervenedNodes)
 			this.adjacencyList.set(node, [new Set(), false])
-		for (const node of nonEvidenceNodes)
+		for (const node of nonQueryIntervenedNodes)
 			this.adjacencyList.set(node, [new Set(node.parents), false])
-		for (const node of queryNodes.concat(nonEvidenceNodes))
+		for (const node of queryNodes.concat(nonQueryIntervenedNodes))
 			for (const parent of node.parents) {
 				// console.log('inner loop', node.name, parent.name)
 				this.adjacencyList.get(parent)![0].add(node)
@@ -48,7 +48,9 @@ export default class InteractionGraph {
 		// 	...(node.children as NodeLike[])
 		// ])
 
-		const nodes = new Set(this.nonEvidenceNodes.concat(this.intervenedNodes))
+		const nodes = new Set(
+			this.nonQueryIntervenedNodes.concat(this.intervenedNodes)
+		)
 		const pi = new Array<Node>(nodes.size)
 
 		for (let i = 0; i < pi.length; i++) {

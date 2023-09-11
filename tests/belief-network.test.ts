@@ -1,4 +1,5 @@
 import BeliefNetwork from '../src/belief-network'
+import { NO_EVIDENCE } from '../src/evidence'
 import Node from '../src/node'
 
 let network: BeliefNetwork<Node>
@@ -126,7 +127,7 @@ test('observational probability of evidence', () => {
 			observations: [{ node: nodeZ, value: 0 }],
 			interventions: []
 		})
-	).toBe(0.6)
+	).toBeCloseTo(0.6)
 	expect(
 		networkSimple.probability({
 			observations: [{ node: nodeX, value: 0 }],
@@ -144,7 +145,7 @@ test('observational probability of evidence', () => {
 			observations: [{ node: nodeY, value: 1 }],
 			interventions: []
 		})
-	).toBeCloseTo(0.576)
+	).toBeCloseTo(0.648)
 	expect(
 		networkSimple.probability({
 			observations: [
@@ -162,7 +163,7 @@ test('observational probability of evidence', () => {
 			],
 			interventions: []
 		})
-	).toBeCloseTo(0.204)
+	).toBeCloseTo(0.18)
 	expect(
 		networkSimple.probability({
 			observations: [
@@ -172,7 +173,7 @@ test('observational probability of evidence', () => {
 			],
 			interventions: []
 		})
-	).toBe(0.096)
+	).toBe(0.072)
 })
 
 test('interventional probability of evidence', () => {
@@ -181,13 +182,13 @@ test('interventional probability of evidence', () => {
 			observations: [{ node: nodeY, value: 0 }],
 			interventions: [{ node: nodeX, value: 0 }]
 		})
-	).toBe(0.14)
+	).toBeCloseTo(0.22)
 	expect(
 		networkSimple.probability({
 			observations: [{ node: nodeY, value: 0 }],
 			interventions: [{ node: nodeX, value: 1 }]
 		})
-	).toBe(0.52)
+	).toBeCloseTo(0.4)
 	expect(
 		networkSimple.probability({
 			observations: [
@@ -196,7 +197,7 @@ test('interventional probability of evidence', () => {
 			],
 			interventions: [{ node: nodeX, value: 0 }]
 		})
-	).toBeCloseTo(0.32)
+	).toBeCloseTo(0.24)
 	expect(
 		networkSimple.probability({
 			observations: [
@@ -215,4 +216,35 @@ test('interventional probability of evidence', () => {
 			]
 		})
 	).toBe(0.9)
+})
+
+test('prior marginals', () => {
+	expect(network.priorMarginal(nodeAge).tensor.cells).toEqual([
+		0.1, 0.2, 0.3, 0.3999999999999999
+	])
+	expect(network.priorMarginal(nodeMedicine).tensor.cells).toEqual([
+		0.8204214982343079, 0.07504296536796537, 0.10453553639772681
+	])
+	expect(networkSimple.priorMarginal(nodeX).tensor.cells).toEqual([0.24, 0.76])
+	expect(networkSimple.priorMarginal(nodeY).tensor.cells).toEqual([
+		0.352, 0.6480000000000001
+	])
+	expect(networkSimple.priorMarginal(nodeZ).tensor.cells).toEqual([
+		0.6000000000000001, 0.39999999999999997
+	])
+})
+
+test('posterior marginals', () => {
+	expect(
+		networkSimple.posteriorMarginal(NO_EVIDENCE, nodeX).tensor.cells
+	).toEqual([0.24, 0.76])
+	expect(
+		networkSimple.posteriorMarginal(
+			{
+				observations: [{ node: nodeX, value: 0 }],
+				interventions: []
+			},
+			nodeY
+		).tensor.cells
+	).toEqual([0.25000000000000006, 0.75])
 })

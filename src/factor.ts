@@ -1,4 +1,5 @@
 import Node from './node'
+import Observation from './observation'
 import Tensor from './tensor'
 import { toSortedWithIndex } from './util'
 
@@ -6,7 +7,9 @@ export default class Factor {
 	constructor(private _nodes: Node[], private _tensor: Tensor) {}
 
 	static fromNode = (node: Node) => {
-		const nodes = node.parents.concat(node)
+		// Node has parents in reverse order to tensors
+		const nodes = [node, ...node.parents].toReversed()
+		// const nodes = node.parents.concat(node)
 		const shape = nodes.map(node => node.values.length)
 		const cells = node.cpt.flat()
 		const tensor = Tensor.withShapeAndCells(shape, cells)
@@ -40,6 +43,23 @@ export default class Factor {
 			throw new Error('Must be 0-dimensional factor to get value')
 		return this._tensor.cells[0]
 	}
+	get normalized() {
+		return new Factor(this._nodes, this._tensor.normalized)
+	}
+
+	reduction = (observationalEvidence: Observation[]) => {
+		// const tensorReduction = this._tensor.clone
+		const sortedObsNodes = observationalEvidence
+			.map(obs => obs.node)
+			.toSorted(Node.comparator)
+		let obsNodesIndex = 0
+		const observationalIndices = this._nodes.map(node =>
+			node === sortedObsNodes[obsNodesIndex]
+				? observationalEvidence[obsNodesIndex++].value
+				: -1
+		)
+		return new Factor(this._nodes, this._tensor.reduction(observationalIndices))
+	}
 
 	multiply = (other: Factor) => {
 		const nodes = Array.from(new Set(this.nodes.concat(other.nodes)))
@@ -65,6 +85,4 @@ export default class Factor {
 		)
 
 	sumOut = (node: Node) => this.project(this._nodes.filter(n => n !== node))
-
-	withoutNodes = (nodesToRemove: Node[]) => {}
 }
