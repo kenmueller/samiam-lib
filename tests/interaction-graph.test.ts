@@ -7,10 +7,9 @@ test('min degree order 1 node', () => {
 
 	const a = Node.withUniformDistribution('a', network, ['yes', 'no'])
 
-	expect(['a']).toEqual(
+	expect(
 		new InteractionGraph([], [], network.nodes).minDegreeOrder.map(n => n.name)
-	)
-	// console.log(new InteractionGraph(network.nodes).minDegreeOrder)
+	).toEqual(['a'])
 })
 
 test('min degree order 2 nodes', () => {
@@ -72,7 +71,7 @@ test('min degree order §6.6 example', () => {
 	)
 })
 
-test('drugs and cancer', () => {
+test('posterior marginal with query node the same as intervened node', () => {
 	const network = new BeliefNetwork()
 
 	const drugs = Node.withUniformDistribution('Drugs', network, ['yes', 'no'])
@@ -111,7 +110,6 @@ test('drugs and cancer', () => {
 			[drugs],
 			network.nodes.filter(node => node !== drugs)
 		).minDegreeOrder.map(n => n.name)
-		// ).toEqual([parents, gender])
 	).toEqual([
 		'Gender',
 		'Parents',
