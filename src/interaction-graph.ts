@@ -17,7 +17,13 @@ export default class InteractionGraph {
 			'intervened nodes',
 			intervenedNodes.map(n => n.name),
 			'remaining nodes',
-			nonQueryIntervenedNodes.map(n => n.name)
+			nonQueryIntervenedNodes.map(n => n.name),
+			'parents',
+			[
+				...new Set(
+					queryNodes.concat(intervenedNodes).concat(nonQueryIntervenedNodes)
+				)
+			].map(n => `${n.name}: ${n.parents.map(p => p.name)}`)
 		)
 		this.adjacencyList = new Map<Node, Set<Node>>()
 		const nonIntervenedNodes = queryNodes.concat(nonQueryIntervenedNodes)
@@ -31,7 +37,7 @@ export default class InteractionGraph {
 				// console.log('inner loop', node.name, parent.name)
 				this.adjacencyList.get(parent)!.add(node)
 			}
-		console.log(adjacencyListString(this.adjacencyList))
+		console.log('adjacency list', adjacencyListString(this.adjacencyList))
 	}
 
 	// static fromEvidence = (
@@ -41,7 +47,9 @@ export default class InteractionGraph {
 
 	get minDegreeOrder() {
 		const nodes = new Set(
-			this.nonQueryIntervenedNodes.concat(this.intervenedNodes)
+			this.intervenedNodes
+				.filter(node => !this.queryNodes.includes(node))
+				.concat(this.nonQueryIntervenedNodes)
 		)
 		const pi = new Array<Node>(nodes.size)
 

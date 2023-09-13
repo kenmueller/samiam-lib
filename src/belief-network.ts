@@ -96,23 +96,23 @@ export default class BeliefNetwork<NodeLike extends Node = Node> {
 		// )
 	}
 
-	priorMarginal = (node: Node) => this.posteriorMarginal(NO_EVIDENCE, node)
+	priorMarginal = (nodes: Node[]) => this.jointMarginal(NO_EVIDENCE, nodes)
 
-	jointMarginal = (evidence: Evidence, posteriorNode: Node) => {
+	jointMarginal = (evidence: Evidence, posteriorNodes: Node[]) => {
 		const intervenedNodes = evidence.interventions.map(int => int.node)
 		const nonQueryIntervenedNodes = this.nodes.filter(
-			node => node !== posteriorNode && !intervenedNodes.includes(node)
+			node => !posteriorNodes.includes(node) && !intervenedNodes.includes(node)
 		)
 
 		const iGraph = new InteractionGraph(
-			[posteriorNode],
+			posteriorNodes,
 			intervenedNodes,
 			nonQueryIntervenedNodes
 		)
 		return this.variableElimination2(evidence, iGraph.minDegreeOrder)
 	}
 
-	posteriorMarginal = (evidence: Evidence, posteriorNode: Node) =>
+	posteriorMarginal = (evidence: Evidence, posteriorNode: Node[]) =>
 		this.jointMarginal(evidence, posteriorNode).normalized
 
 	/** returns P(mpe, e_obs | e_int), P(mpe | e_obs, e_int), list of nodes and value indices */

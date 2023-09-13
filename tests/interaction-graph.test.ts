@@ -71,3 +71,53 @@ test('min degree order §6.6 example', () => {
 		new InteractionGraph([], [], network.nodes).minDegreeOrder.map(n => n.name)
 	)
 })
+
+test('drugs and cancer', () => {
+	const network = new BeliefNetwork()
+
+	const drugs = Node.withUniformDistribution('Drugs', network, ['yes', 'no'])
+	const cancer = Node.withUniformDistribution('Cancer', network, ['yes', 'no'])
+	const smoking = Node.withUniformDistribution('Smoking', network, [
+		'yes',
+		'no'
+	])
+	const gender = Node.withUniformDistribution('Gender', network, ['yes', 'no'])
+	const lifestyle = Node.withUniformDistribution('Lifestyle', network, [
+		'yes',
+		'no'
+	])
+	const upbringing = Node.withUniformDistribution('Upbringing', network, [
+		'yes',
+		'no'
+	])
+	const parents = Node.withUniformDistribution('Parents', network, [
+		'yes',
+		'no'
+	])
+
+	drugs.addParent(lifestyle)
+	drugs.addParent(upbringing)
+	cancer.addParent(smoking)
+	cancer.addParent(drugs)
+	cancer.addParent(gender)
+	smoking.addParent(lifestyle)
+	smoking.addParent(upbringing)
+	lifestyle.addParent(upbringing)
+	upbringing.addParent(parents)
+
+	expect(
+		new InteractionGraph(
+			[drugs],
+			[drugs],
+			network.nodes.filter(node => node !== drugs)
+		).minDegreeOrder.map(n => n.name)
+		// ).toEqual([parents, gender])
+	).toEqual([
+		'Gender',
+		'Parents',
+		'Cancer',
+		'Smoking',
+		'Lifestyle',
+		'Upbringing'
+	])
+})

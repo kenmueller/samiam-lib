@@ -219,24 +219,26 @@ test('interventional probability of evidence', () => {
 })
 
 test('prior marginals', () => {
-	expect(network.priorMarginal(nodeAge).tensor.cells).toEqual([
+	expect(network.priorMarginal([nodeAge]).tensor.cells).toEqual([
 		0.1, 0.2, 0.3, 0.3999999999999999
 	])
-	expect(network.priorMarginal(nodeMedicine).tensor.cells).toEqual([
+	expect(network.priorMarginal([nodeMedicine]).tensor.cells).toEqual([
 		0.8204214982343079, 0.07504296536796537, 0.10453553639772681
 	])
-	expect(networkSimple.priorMarginal(nodeX).tensor.cells).toEqual([0.24, 0.76])
-	expect(networkSimple.priorMarginal(nodeY).tensor.cells).toEqual([
+	expect(networkSimple.priorMarginal([nodeX]).tensor.cells).toEqual([
+		0.24, 0.76
+	])
+	expect(networkSimple.priorMarginal([nodeY]).tensor.cells).toEqual([
 		0.352, 0.6480000000000001
 	])
-	expect(networkSimple.priorMarginal(nodeZ).tensor.cells).toEqual([
+	expect(networkSimple.priorMarginal([nodeZ]).tensor.cells).toEqual([
 		0.6000000000000001, 0.39999999999999997
 	])
 })
 
 test('posterior marginals', () => {
 	expect(
-		networkSimple.posteriorMarginal(NO_EVIDENCE, nodeX).tensor.cells
+		networkSimple.posteriorMarginal(NO_EVIDENCE, [nodeX]).tensor.cells
 	).toEqual([0.24, 0.76])
 	expect(
 		networkSimple.posteriorMarginal(
@@ -244,7 +246,7 @@ test('posterior marginals', () => {
 				observations: [{ node: nodeX, value: 0 }],
 				interventions: []
 			},
-			nodeY
+			[nodeY]
 		).tensor.cells
 	).toEqual([0.25000000000000006, 0.75])
 })
