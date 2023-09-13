@@ -1,3 +1,5 @@
+import Node from './node'
+
 declare global {
 	interface Array<T> {
 		toSorted(comparator: (a: T, b: T) => number): Array<T>
@@ -124,3 +126,11 @@ export const toSortedWithIndex = <T>(
 	array
 		.map((a, i) => [a, i] as [T, number])
 		.toSorted(([a], [b]) => comparator(a, b))
+
+export const adjacencyListString = (list: Map<Node, Set<Node>>) =>
+	[...list.entries()].map(
+		([node, children]) =>
+			`${node.name}: ${Array.from(children)
+				.map(n => n.name)
+				.join(',')}`
+	)
