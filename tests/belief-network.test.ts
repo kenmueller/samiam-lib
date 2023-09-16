@@ -5,8 +5,10 @@ import Node from '../src/node'
 let network: BeliefNetwork<Node>
 let nodeAge: Node, nodeMedicine: Node, nodeSeverity: Node, nodeOutcome: Node
 
+let networkSimpleDichotomous: BeliefNetwork<Node>
 let networkSimple: BeliefNetwork<Node>
 let nodeX: Node, nodeY: Node, nodeZ: Node
+let nodeA: Node, nodeB: Node
 
 const initializeNetwork = () => {
 	network = new BeliefNetwork()
@@ -93,12 +95,21 @@ const initializeNetwork = () => {
 }
 initializeNetwork()
 
-const initializeNetworkSimple = () => {
-	networkSimple = new BeliefNetwork()
+const initializeNetworkSimpleDichotomous = () => {
+	networkSimpleDichotomous = new BeliefNetwork()
 
-	nodeX = Node.withUniformDistribution('X', networkSimple, ['yes', 'no'])
-	nodeY = Node.withUniformDistribution('Y', networkSimple, ['yes', 'no'])
-	nodeZ = Node.withUniformDistribution('Z', networkSimple, ['yes', 'no'])
+	nodeX = Node.withUniformDistribution('X', networkSimpleDichotomous, [
+		'yes',
+		'no'
+	])
+	nodeY = Node.withUniformDistribution('Y', networkSimpleDichotomous, [
+		'yes',
+		'no'
+	])
+	nodeZ = Node.withUniformDistribution('Z', networkSimpleDichotomous, [
+		'yes',
+		'no'
+	])
 
 	nodeX.addParent(nodeZ)
 	nodeY.addParent(nodeX)
@@ -116,38 +127,62 @@ const initializeNetworkSimple = () => {
 		[0.7, 0.3]
 	])
 }
+initializeNetworkSimpleDichotomous()
+
+const initializeNetworkSimple = () => {
+	networkSimple = new BeliefNetwork()
+
+	nodeA = Node.withUniformDistribution('A', networkSimple, [
+		'yes',
+		'no'
+		// 'maybe'
+	])
+	nodeA.addValue('maybe')
+	nodeB = Node.withUniformDistribution('B', networkSimple, ['yes', 'no'])
+
+	nodeB.addParent(nodeA)
+
+	nodeA.setCpt([[0.2, 0.3, 0.5]])
+	nodeB.setCpt([
+		[0.1, 0.9],
+		[0.4, 0.6],
+		[0.7, 0.3]
+	])
+}
 initializeNetworkSimple()
+
+test('trivial probability of evidence', () => {
+	expect(networkSimple.probability(NO_EVIDENCE)).toBe(1)
+	expect(networkSimpleDichotomous.probability(NO_EVIDENCE)).toBe(1)
+})
 
 test('observational probability of evidence', () => {
 	expect(
-		networkSimple.probability({ observations: [], interventions: [] })
-	).toBe(1)
-	expect(
-		networkSimple.probability({
+		networkSimpleDichotomous.probability({
 			observations: [{ node: nodeZ, value: 0 }],
 			interventions: []
 		})
 	).toBeCloseTo(0.6)
 	expect(
-		networkSimple.probability({
+		networkSimpleDichotomous.probability({
 			observations: [{ node: nodeX, value: 0 }],
 			interventions: []
 		})
 	).toBe(0.24)
 	expect(
-		networkSimple.probability({
+		networkSimpleDichotomous.probability({
 			observations: [{ node: nodeX, value: 1 }],
 			interventions: []
 		})
 	).toBe(0.76)
 	expect(
-		networkSimple.probability({
+		networkSimpleDichotomous.probability({
 			observations: [{ node: nodeY, value: 1 }],
 			interventions: []
 		})
 	).toBeCloseTo(0.648)
 	expect(
-		networkSimple.probability({
+		networkSimpleDichotomous.probability({
 			observations: [
 				{ node: nodeZ, value: 0 },
 				{ node: nodeX, value: 0 }
@@ -156,7 +191,7 @@ test('observational probability of evidence', () => {
 		})
 	).toBe(0.12)
 	expect(
-		networkSimple.probability({
+		networkSimpleDichotomous.probability({
 			observations: [
 				{ node: nodeX, value: 0 },
 				{ node: nodeY, value: 1 }
@@ -165,7 +200,7 @@ test('observational probability of evidence', () => {
 		})
 	).toBeCloseTo(0.18)
 	expect(
-		networkSimple.probability({
+		networkSimpleDichotomous.probability({
 			observations: [
 				{ node: nodeX, value: 0 },
 				{ node: nodeY, value: 1 },
@@ -178,19 +213,19 @@ test('observational probability of evidence', () => {
 
 test('interventional probability of evidence', () => {
 	expect(
-		networkSimple.probability({
+		networkSimpleDichotomous.probability({
 			observations: [{ node: nodeY, value: 0 }],
 			interventions: [{ node: nodeX, value: 0 }]
 		})
 	).toBeCloseTo(0.22)
 	expect(
-		networkSimple.probability({
+		networkSimpleDichotomous.probability({
 			observations: [{ node: nodeY, value: 0 }],
 			interventions: [{ node: nodeX, value: 1 }]
 		})
 	).toBeCloseTo(0.4)
 	expect(
-		networkSimple.probability({
+		networkSimpleDichotomous.probability({
 			observations: [
 				{ node: nodeY, value: 1 },
 				{ node: nodeZ, value: 1 }
@@ -199,7 +234,7 @@ test('interventional probability of evidence', () => {
 		})
 	).toBeCloseTo(0.24)
 	expect(
-		networkSimple.probability({
+		networkSimpleDichotomous.probability({
 			observations: [
 				{ node: nodeX, value: 0 },
 				{ node: nodeY, value: 1 }
@@ -208,7 +243,7 @@ test('interventional probability of evidence', () => {
 		})
 	).toBeCloseTo(0.18)
 	expect(
-		networkSimple.probability({
+		networkSimpleDichotomous.probability({
 			observations: [{ node: nodeY, value: 1 }],
 			interventions: [
 				{ node: nodeX, value: 0 },
@@ -225,23 +260,24 @@ test('prior marginals', () => {
 	expect(network.priorMarginal([nodeMedicine]).tensor.cells).toEqual([
 		0.8204214982343079, 0.07504296536796537, 0.10453553639772681
 	])
-	expect(networkSimple.priorMarginal([nodeX]).tensor.cells).toEqual([
+	expect(networkSimpleDichotomous.priorMarginal([nodeX]).tensor.cells).toEqual([
 		0.24, 0.76
 	])
-	expect(networkSimple.priorMarginal([nodeY]).tensor.cells).toEqual([
+	expect(networkSimpleDichotomous.priorMarginal([nodeY]).tensor.cells).toEqual([
 		0.352, 0.6480000000000001
 	])
-	expect(networkSimple.priorMarginal([nodeZ]).tensor.cells).toEqual([
+	expect(networkSimpleDichotomous.priorMarginal([nodeZ]).tensor.cells).toEqual([
 		0.6000000000000001, 0.39999999999999997
 	])
 })
 
 test('posterior marginals', () => {
 	expect(
-		networkSimple.posteriorMarginal(NO_EVIDENCE, [nodeX]).tensor.cells
+		networkSimpleDichotomous.posteriorMarginal(NO_EVIDENCE, [nodeX]).tensor
+			.cells
 	).toEqual([0.24, 0.76])
 	expect(
-		networkSimple.posteriorMarginal(
+		networkSimpleDichotomous.posteriorMarginal(
 			{
 				observations: [{ node: nodeX, value: 0 }],
 				interventions: []

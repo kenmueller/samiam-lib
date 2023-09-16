@@ -179,6 +179,7 @@ export default class Node {
 		// no need to normalize with new entries of probability 0
 		for (const child of this.children)
 			child.parentValueAdded(this, this.values.length - 1)
+		this._factor = Factor.fromNode(this)
 	}
 
 	parentValueAdded = (parent: Node, valueIndex: number) => {
@@ -216,6 +217,7 @@ export default class Node {
 		for (const row of this.cpt) row.splice(index, 1)
 		this.normalizeCpt()
 		for (const child of this.children) child.parentValueRemoved(this, index)
+		this._factor = Factor.fromNode(this)
 	}
 
 	parentValueRemoved = (parent: Node, valueIndex: number) => {
