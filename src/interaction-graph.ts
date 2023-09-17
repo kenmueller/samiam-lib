@@ -11,20 +11,6 @@ export default class InteractionGraph {
 		public intervenedNodes: Node[],
 		public nonQueryIntervenedNodes: Node[]
 	) {
-		// console.log(
-		// 	'igraph query nodes',
-		// 	queryNodes.map(n => n.name),
-		// 	'intervened nodes',
-		// 	intervenedNodes.map(n => n.name),
-		// 	'remaining nodes',
-		// 	nonQueryIntervenedNodes.map(n => n.name),
-		// 	'parents',
-		// 	[
-		// 		...new Set(
-		// 			queryNodes.concat(intervenedNodes).concat(nonQueryIntervenedNodes)
-		// 		)
-		// 	].map(n => `${n.name}: ${n.parents.map(p => p.name)}`)
-		// )
 		this.adjacencyList = new Map<Node, Set<Node>>()
 		const nonIntervenedNodes = queryNodes.concat(nonQueryIntervenedNodes)
 		for (const node of nonIntervenedNodes)
@@ -32,10 +18,8 @@ export default class InteractionGraph {
 		for (const node of intervenedNodes) this.adjacencyList.set(node, new Set())
 		for (const node of nonIntervenedNodes)
 			for (const parent of node.parents) {
-				// console.log('inner loop', node.name, parent.name)
 				this.adjacencyList.get(parent)!.add(node)
 			}
-		// console.log('adjacency list', adjacencyListString(this.adjacencyList))
 	}
 
 	// static fromEvidence = (

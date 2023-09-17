@@ -62,13 +62,6 @@ export default class Factor {
 	}
 
 	multiply = (other: Factor) => {
-		console.log(
-			'factor mult',
-			this.nodes.map(n => n.name),
-			this.tensor.shape,
-			other.nodes.map(n => n.name),
-			other.tensor.shape
-		)
 		const nodes = Array.from(new Set(this.nodes.concat(other.nodes)))
 		let sortedNodes = nodes.sort(Node.comparator)
 		let thisTensor = this._tensor
