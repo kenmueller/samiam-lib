@@ -286,3 +286,59 @@ test('posterior marginals', () => {
 		).tensor.cells
 	).toEqual([0.25000000000000006, 0.75])
 })
+
+test('mpe', () => {
+	let result = networkSimpleDichotomous.mpe(NO_EVIDENCE)
+	expect(result.jointProbability).toEqual(0.384)
+	expect(result.condProbability).toEqual(0.384)
+	expect(result.instantiations).toEqual([
+		{ node: nodeX, value: 1 },
+		{ node: nodeY, value: 1 },
+		{ node: nodeZ, value: 0 }
+	])
+
+	result = networkSimpleDichotomous.mpe({
+		observations: [
+			{ node: nodeX, value: 0 },
+			{ node: nodeY, value: 1 },
+			{ node: nodeZ, value: 0 }
+		],
+		interventions: []
+	})
+	expect(result.jointProbability).toEqual(0.108)
+	expect(result.condProbability).toEqual(1)
+	expect(result.instantiations).toEqual([])
+
+	result = networkSimpleDichotomous.mpe({
+		observations: [
+			{ node: nodeX, value: 1 },
+			{ node: nodeZ, value: 0 }
+		],
+		interventions: []
+	})
+	expect(result.jointProbability).toEqual(0.384)
+	expect(result.condProbability).toEqual(0.8)
+	expect(result.instantiations).toEqual([{ node: nodeY, value: 1 }])
+
+	result = networkSimpleDichotomous.mpe({
+		observations: [],
+		interventions: [{ node: nodeX, value: 0 }]
+	})
+	expect(result.jointProbability).toEqual(0.108)
+	expect(result.condProbability).toEqual(0.45)
+	expect(result.instantiations).toEqual([
+		{ node: nodeY, value: 1 },
+		{ node: nodeZ, value: 0 }
+	])
+
+	result = networkSimpleDichotomous.mpe({
+		observations: [],
+		interventions: [{ node: nodeX, value: 0 }]
+	})
+	expect(result.jointProbability).toEqual(0.54)
+	expect(result.condProbability).toEqual(0.54)
+	expect(result.instantiations).toEqual([
+		{ node: nodeY, value: 1 },
+		{ node: nodeZ, value: 0 }
+	])
+})
