@@ -112,8 +112,8 @@ export default class BeliefNetwork<NodeLike extends Node = Node> {
 		return this.variableElimination2(evidence, iGraph.minDegreeOrder)
 	}
 
-	posteriorMarginal = (evidence: Evidence, posteriorNode: Node[]) =>
-		this.jointMarginal(evidence, posteriorNode).normalized
+	posteriorMarginal = (evidence: Evidence, posteriorNodes: Node[]) =>
+		this.jointMarginal(evidence, posteriorNodes).normalized
 
 	/** returns P(mpe, e_obs | e_int), P(mpe | e_obs, e_int), list of nodes and value indices */
 	mpe = (evidence: Evidence): MapResult => {
@@ -121,9 +121,24 @@ export default class BeliefNetwork<NodeLike extends Node = Node> {
 			...pluck(evidence.observations, 'node'),
 			...pluck(evidence.interventions, 'node')
 		])
+
 		const nonEvidenceNodes = this.nodes.filter(node => !evidenceNodes.has(node))
+
+		const conditionalProbabilties = this.posteriorMarginal(
+			evidence,
+			nonEvidenceNodes
+		)
+
+		const probability = Math.max(...conditionalProbabilties.tensor.cells)
+		const mpeIndex = conditionalProbabilties.tensor.cells.indexOf(probability)
+
+		const posteriorMarginal = this.posteriorMarginal(
+			{ observations: [], interventions: evidence.interventions },
+			[...nonEvidenceNodes, ...evidence.observations.map(obs => obs.node)]
+		)
+
 		return {
-			jointProbability: Math.random(),
+			jointProbability: probability * this.probability(evidence),
 			condProbability: Math.random(),
 			instantiations: nonEvidenceNodes.map(node => ({ node, value: 0 }))
 		}
