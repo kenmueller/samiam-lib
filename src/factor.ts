@@ -85,4 +85,14 @@ export default class Factor {
 		)
 
 	sumOut = (node: Node) => this.project(this._nodes.filter(n => n !== node))
+
+	nodeInstantiations = (cellIndex: number) =>
+		this._nodes.length === 0
+			? []
+			: this._tensor
+					.indicesFromCellIndex(cellIndex)
+					.map((instantiation, mapIndex) => ({
+						node: this._nodes[mapIndex],
+						value: instantiation
+					}))
 }

@@ -1,5 +1,7 @@
 import BeliefNetwork from '../src/belief-network'
 import { NO_EVIDENCE } from '../src/evidence'
+import Instantiation from '../src/instantiation'
+import MapResult from '../src/map-result'
 import Node from '../src/node'
 
 let network: BeliefNetwork<Node>
@@ -287,14 +289,20 @@ test('posterior marginals', () => {
 	).toEqual([0.25000000000000006, 0.75])
 })
 
+const withNodeNames = (instantiations: Instantiation[]) =>
+	instantiations.map(inst => ({
+		node: inst.node.name,
+		value: inst.value
+	}))
+
 test('mpe', () => {
 	let result = networkSimpleDichotomous.mpe(NO_EVIDENCE)
-	expect(result.jointProbability).toEqual(0.384)
-	expect(result.condProbability).toEqual(0.384)
-	expect(result.instantiations).toEqual([
-		{ node: nodeX, value: 1 },
-		{ node: nodeY, value: 1 },
-		{ node: nodeZ, value: 0 }
+	expect(result.jointProbability).toBeCloseTo(0.384)
+	expect(result.condProbability).toBeCloseTo(0.384)
+	expect(withNodeNames(result.instantiations)).toEqual([
+		{ node: 'X', value: 1 },
+		{ node: 'Y', value: 1 },
+		{ node: 'Z', value: 0 }
 	])
 
 	result = networkSimpleDichotomous.mpe({
@@ -305,8 +313,8 @@ test('mpe', () => {
 		],
 		interventions: []
 	})
-	expect(result.jointProbability).toEqual(0.108)
-	expect(result.condProbability).toEqual(1)
+	expect(result.jointProbability).toBeCloseTo(0.108)
+	expect(result.condProbability).toBeCloseTo(1)
 	expect(result.instantiations).toEqual([])
 
 	result = networkSimpleDichotomous.mpe({
@@ -316,29 +324,46 @@ test('mpe', () => {
 		],
 		interventions: []
 	})
-	expect(result.jointProbability).toEqual(0.384)
-	expect(result.condProbability).toEqual(0.8)
-	expect(result.instantiations).toEqual([{ node: nodeY, value: 1 }])
+	expect(result.jointProbability).toBeCloseTo(0.384)
+	expect(result.condProbability).toBeCloseTo(0.8)
+	expect(withNodeNames(result.instantiations)).toEqual([
+		{ node: 'Y', value: 1 }
+	])
 
 	result = networkSimpleDichotomous.mpe({
-		observations: [],
-		interventions: [{ node: nodeX, value: 0 }]
+		observations: [{ node: nodeX, value: 0 }],
+		interventions: []
 	})
-	expect(result.jointProbability).toEqual(0.108)
-	expect(result.condProbability).toEqual(0.45)
-	expect(result.instantiations).toEqual([
-		{ node: nodeY, value: 1 },
-		{ node: nodeZ, value: 0 }
+	expect(result.jointProbability).toBeCloseTo(0.108)
+	expect(result.condProbability).toBeCloseTo(0.45)
+	expect(withNodeNames(result.instantiations)).toEqual([
+		{ node: 'Y', value: 1 },
+		{ node: 'Z', value: 0 }
 	])
 
 	result = networkSimpleDichotomous.mpe({
 		observations: [],
 		interventions: [{ node: nodeX, value: 0 }]
 	})
-	expect(result.jointProbability).toEqual(0.54)
-	expect(result.condProbability).toEqual(0.54)
-	expect(result.instantiations).toEqual([
-		{ node: nodeY, value: 1 },
-		{ node: nodeZ, value: 0 }
+	expect(result.jointProbability).toBeCloseTo(0.54)
+	expect(result.condProbability).toBeCloseTo(0.54)
+	expect(withNodeNames(result.instantiations)).toEqual([
+		{ node: 'Y', value: 1 },
+		{ node: 'Z', value: 0 }
+	])
+})
+
+test('map', () => {
+	let result = networkSimpleDichotomous.map(
+		{
+			observations: [{ node: nodeX, value: 0 }],
+			interventions: []
+		},
+		[nodeZ]
+	)
+	expect(result.jointProbability).toBeCloseTo(0.12)
+	expect(result.condProbability).toBeCloseTo(0.5)
+	expect(withNodeNames(result.instantiations)).toEqual([
+		{ node: 'Z', value: 0 }
 	])
 })

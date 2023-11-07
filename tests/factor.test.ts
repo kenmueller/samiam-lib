@@ -195,3 +195,9 @@ test('reduction', () => {
 	expect(nodeYReducedFactor.tensor.valueAt([1, 1, 1])).toBeCloseTo(0)
 	// const nodesXYReducedFactor = nodeXReducedFactor.multiply(nodeYReducedFactor)
 })
+test('node instantiations from index', () => {
+	const factorXY = nodeY.factor.multiply(nodeX.factor)
+	expect(factorXY.nodes.map(node => node.name)).toStrictEqual(['X', 'Y', 'Z'])
+	expect(factorXY.tensor.shape).toEqual([2, 2, 2])
+	expect(factorXY.tensor.stride).toEqual([4, 2, 1])
+})

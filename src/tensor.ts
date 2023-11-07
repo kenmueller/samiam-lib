@@ -292,4 +292,13 @@ export default class Tensor {
 		})
 		return new Tensor(projectedShape, projectedStride, projectedCells)
 	}
+
+	indicesFromCellIndex = (cellIndex: number) => {
+		let cell = cellIndex
+		return this._stride.map(stride => {
+			const nodeIndex = Math.floor(cell / stride)
+			cell = cell % stride
+			return nodeIndex
+		})
+	}
 }

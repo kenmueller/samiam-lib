@@ -124,32 +124,34 @@ export default class BeliefNetwork<NodeLike extends Node = Node> {
 
 		const nonEvidenceNodes = this.nodes.filter(node => !evidenceNodes.has(node))
 
-		const conditionalProbabilties = this.posteriorMarginal(
+		const conditionalProbabilities = this.posteriorMarginal(
 			evidence,
 			nonEvidenceNodes
 		)
 
-		const probability = Math.max(...conditionalProbabilties.tensor.cells)
-		const mpeIndex = conditionalProbabilties.tensor.cells.indexOf(probability)
-
-		const posteriorMarginal = this.posteriorMarginal(
-			{ observations: [], interventions: evidence.interventions },
-			[...nonEvidenceNodes, ...evidence.observations.map(obs => obs.node)]
-		)
+		const condProbability = Math.max(...conditionalProbabilities.tensor.cells)
+		const mpeIndex =
+			conditionalProbabilities.tensor.cells.indexOf(condProbability)
 
 		return {
-			jointProbability: probability * this.probability(evidence),
-			condProbability: Math.random(),
-			instantiations: nonEvidenceNodes.map(node => ({ node, value: 0 }))
+			jointProbability: condProbability * this.probability(evidence),
+			condProbability: condProbability,
+			instantiations: conditionalProbabilities.nodeInstantiations(mpeIndex)
 		}
 	}
 
 	/** returns P(map, e_obs | e_int), P(map | e_obs, e_int), list of nodes and value indices */
 	map = (evidence: Evidence, nodes: Node[]): MapResult => {
+		const conditionalProbabilities = this.posteriorMarginal(evidence, nodes)
+
+		const condProbability = Math.max(...conditionalProbabilities.tensor.cells)
+		const mpeIndex =
+			conditionalProbabilities.tensor.cells.indexOf(condProbability)
+
 		return {
-			jointProbability: Math.random(),
-			condProbability: Math.random(),
-			instantiations: nodes.map(node => ({ node, value: 0 }))
+			jointProbability: condProbability * this.probability(evidence),
+			condProbability: condProbability,
+			instantiations: conditionalProbabilities.nodeInstantiations(mpeIndex)
 		}
 	}
 
