@@ -356,6 +356,20 @@ test('mpe', () => {
 test('map', () => {
 	let result: MapResult
 
+	result = networkSimpleDichotomous.map(
+		{
+			observations: [{ node: nodeX, value: 0 }],
+			interventions: []
+		},
+		[nodeZ]
+	)
+
+	expect(result.jointProbability).toBeCloseTo(0.12)
+	expect(result.condProbability).toBeCloseTo(0.5)
+	expect(withNodeNames(result.instantiations)).toEqual([
+		{ node: 'Z', value: 0 }
+	])
+
 	result = network.map(
 		{
 			observations: [{ node: nodeMedicine, value: 0 }],
