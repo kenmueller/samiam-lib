@@ -354,16 +354,63 @@ test('mpe', () => {
 })
 
 test('map', () => {
-	let result = networkSimpleDichotomous.map(
+	let result: MapResult
+
+	result = network.map(
 		{
-			observations: [{ node: nodeX, value: 0 }],
+			observations: [{ node: nodeMedicine, value: 0 }],
 			interventions: []
 		},
-		[nodeZ]
+		[nodeAge]
 	)
-	expect(result.jointProbability).toBeCloseTo(0.12)
-	expect(result.condProbability).toBeCloseTo(0.5)
+
+	expect(result.jointProbability).toBeCloseTo(0.36)
+	expect(result.condProbability).toBeCloseTo(0.44)
 	expect(withNodeNames(result.instantiations)).toEqual([
-		{ node: 'Z', value: 0 }
+		{ node: 'age', value: 3 }
+	])
+
+	result = network.map(
+		{
+			observations: [{ node: nodeMedicine, value: 0 }],
+			interventions: [{ node: nodeAge, value: 1 }]
+		},
+		[nodeOutcome]
+	)
+
+	expect(result.jointProbability).toBeCloseTo(0.29)
+	expect(result.condProbability).toBeCloseTo(0.33)
+	expect(withNodeNames(result.instantiations)).toEqual([
+		{ node: 'outcome', value: 0 }
+	])
+
+	result = network.map(
+		{
+			observations: [],
+			interventions: []
+		},
+		[nodeAge, nodeMedicine, nodeOutcome]
+	)
+
+	expect(result.jointProbability).toBeCloseTo(0.12)
+	expect(result.condProbability).toBeCloseTo(0.12)
+	expect(withNodeNames(result.instantiations)).toEqual([
+		{ node: 'age', value: 3 },
+		{ node: 'medicine', value: 0 },
+		{ node: 'outcome', value: 0 }
+	])
+
+	result = network.map(
+		{
+			observations: [],
+			interventions: [{ node: nodeMedicine, value: 0 }]
+		},
+		[nodeOutcome]
+	)
+
+	expect(result.jointProbability).toBeCloseTo(0.33)
+	expect(result.condProbability).toBeCloseTo(0.33)
+	expect(withNodeNames(result.instantiations)).toEqual([
+		{ node: 'outcome', value: 0 }
 	])
 })
