@@ -65,6 +65,7 @@ export default class Tensor {
 		)
 
 	reduction = (observationalIndices: number[]) => {
+		// console.log('obs indices:', observationalIndices)
 		const newShape = this._shape.slice()
 		const newStride = this._stride.slice()
 		const newCells = this._cells.slice()

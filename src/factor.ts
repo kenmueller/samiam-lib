@@ -48,15 +48,29 @@ export default class Factor {
 	}
 
 	reduction = (observationalEvidence: Observation[]) => {
-		// const tensorReduction = this._tensor.clone
-		const sortedObsNodes = observationalEvidence
-			.map(obs => obs.node)
-			.toSorted(Node.comparator)
-		let obsNodesIndex = 0
-		const observationalIndices = this._nodes.map(node =>
-			node === sortedObsNodes[obsNodesIndex]
-				? observationalEvidence[obsNodesIndex++].value
-				: -1
+		// const sortedObsNodes = observationalEvidence
+		// 	.map(obs => obs.node)
+		// 	.toSorted(Node.comparator)
+		const observationalNodes = observationalEvidence.map(obs => obs.node)
+		// console.log(
+		// 	'sorted:',
+		// 	sortedObsNodes.map(obs => obs.name)
+		// )
+		// let obsNodesIndex = 0
+		// console.log(
+		// 	'nodes of this factor:',
+		// 	this._nodes.map(node => node.name)
+		// )
+		const observationalIndices = this._nodes.map(
+			node => {
+				let obsNodesIndex = observationalNodes.indexOf(node)
+				return obsNodesIndex == -1
+					? -1
+					: observationalEvidence[obsNodesIndex].value
+			}
+			// node === sortedObsNodes[obsNodesIndex]
+			// 	? observationalEvidence[obsNodesIndex++].value
+			// 	: -1
 		)
 		return new Factor(this._nodes, this._tensor.reduction(observationalIndices))
 	}

@@ -19,6 +19,18 @@ export default class BeliefNetwork<NodeLike extends Node = Node> {
 		{ observations, interventions }: Evidence,
 		eliminationOrder: Node[]
 	) => {
+		// console.log(
+		// 	'obs:',
+		// 	observations.map(obs => `Node: ${obs.node.name}, val: ${obs.value}`)
+		// )
+		// console.log(
+		// 	'int:',
+		// 	interventions.map(obs => `Node: ${obs.node.name}, val: ${obs.value}`)
+		// )
+		// console.log(
+		// 	'elimOrder:',
+		// 	eliminationOrder.map(elim => elim.name)
+		// )
 		// intervened factors have no parents and all probability mass on a single value
 		let factors = this.nodes.map(node => {
 			const intervention = interventions.find(int => int.node === node)

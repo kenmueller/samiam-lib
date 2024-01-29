@@ -12,6 +12,12 @@ let networkSimple: BeliefNetwork<Node>
 let nodeX: Node, nodeY: Node, nodeZ: Node
 let nodeA: Node, nodeB: Node
 
+let networkSensors: BeliefNetwork<Node>
+let nodeSensor1: Node,
+	nodeSensor2: Node,
+	nodeBattery: Node,
+	nodeTemperature: Node
+
 const initializeNetwork = () => {
 	network = new BeliefNetwork()
 
@@ -153,6 +159,50 @@ const initializeNetworkSimple = () => {
 }
 initializeNetworkSimple()
 
+// Exercise 5.4 in Modeling and Reasoning with Bayesian Networks
+const initializeNetworkSensors = () => {
+	networkSensors = new BeliefNetwork()
+
+	nodeTemperature = Node.withUniformDistribution(
+		'Temperature',
+		networkSensors,
+		['extreme', 'normal']
+	)
+	nodeBattery = Node.withUniformDistribution('Battery', networkSensors, [
+		'on',
+		'off'
+	])
+	nodeSensor1 = Node.withUniformDistribution('Sensor 1', networkSensors, [
+		'positive',
+		'negative'
+	])
+	nodeSensor2 = Node.withUniformDistribution('Sensor 2', networkSensors, [
+		'positive',
+		'negative'
+	])
+
+	nodeSensor1.addParent(nodeTemperature)
+	nodeSensor1.addParent(nodeBattery)
+	nodeSensor2.addParent(nodeTemperature)
+	nodeSensor2.addParent(nodeBattery)
+
+	nodeBattery.setCpt([[0.9, 0.1]])
+	nodeTemperature.setCpt([[0.2, 0.8]])
+	nodeSensor1.setCpt([
+		[0.97, 0.03],
+		[0.01, 0.99],
+		[0, 1],
+		[0, 1]
+	])
+	nodeSensor2.setCpt([
+		[0.97, 0.03],
+		[0.01, 0.99],
+		[0, 1],
+		[0, 1]
+	])
+}
+initializeNetworkSensors()
+
 test('trivial probability of evidence', () => {
 	expect(networkSimple.probability(NO_EVIDENCE)).toBe(1)
 	expect(networkSimpleDichotomous.probability(NO_EVIDENCE)).toBe(1)
@@ -211,6 +261,42 @@ test('observational probability of evidence', () => {
 			interventions: []
 		})
 	).toBe(0.072)
+	expect(
+		networkSensors.probability({
+			observations: [
+				{ node: nodeSensor1, value: 0 },
+				{ node: nodeSensor2, value: 0 }
+			],
+			interventions: []
+		})
+	).toBeCloseTo(0.169434)
+	expect(
+		networkSensors.probability({
+			observations: [
+				{ node: nodeSensor1, value: 0 },
+				{ node: nodeSensor2, value: 1 }
+			],
+			interventions: []
+		})
+	).toBeCloseTo(0.012366)
+	expect(
+		networkSensors.probability({
+			observations: [
+				{ node: nodeSensor1, value: 1 },
+				{ node: nodeSensor2, value: 0 }
+			],
+			interventions: []
+		})
+	).toBeCloseTo(0.012366)
+	expect(
+		networkSensors.probability({
+			observations: [
+				{ node: nodeSensor1, value: 1 },
+				{ node: nodeSensor2, value: 1 }
+			],
+			interventions: []
+		})
+	).toBeCloseTo(0.805834)
 })
 
 test('interventional probability of evidence', () => {
